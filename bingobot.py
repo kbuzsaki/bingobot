@@ -20,9 +20,10 @@ class Message:
     def __init__(self, ircmsg):
         if not isMessage(ircmsg):
             raise Exception("improperly detected message: " + ircmsg)
-        self.sender = ircmsg[1:ircmsg.index("!")]
+        messageInfo = ircmsg[1:].split(":")[0].strip()
+        self.sender = messageInfo.split("!")[0]
         # after the first hash but before any following spaces
-        self.channel = "#" + ircmsg.split("#", 1)[1].split(" ", 1)[0]
+        self.channel = messageInfo.split(" ")[-1] if "#" in messageInfo else self.sender
         self.text = ircmsg[1:].split(":", 1)[1]
 
     def contains(self, string):
@@ -88,9 +89,10 @@ class BingoBot:
             if ircmsg.find("End of /MOTD"):
                 self.joinchan(self.channel)
 
-    def getRacer(self, username, refresh=False):
+    def getRacer(self, channel, username, refresh=False):
         if (refresh or username not in self.racers):
             try:
+                self.sendmsg(channel, "Loading data for " + username + "...")
                 self.racers[username] = Racer(username)
             except:
                 raise NameException(username)
@@ -102,7 +104,7 @@ class BingoBot:
 def racerStats(bot, msg):
     if msg.command == "!racer":
         username = msg.elements[1].lower()
-        racer = bot.getRacer(username, "refresh" in msg.elements)
+        racer = bot.getRacer(msg.channel, username, "refresh" in msg.elements)
 
         message = username + " has completed " + str(len(racer.validResults())) + " bingos "
         bot.sendmsg(msg.channel, message)
@@ -110,7 +112,7 @@ def racerStats(bot, msg):
 def pastTimes(bot, msg):
     if msg.command == "!results":
         username = msg.elements[1].lower()
-        racer = bot.getRacer(username, "refresh" in msg.elements)
+        racer = bot.getRacer(msg.channel, username, "refresh" in msg.elements)
         if len(msg.elements) > 2 and msg.elements[2].isdigit():
             maxResults = int(msg.elements[2])
         else:
@@ -124,7 +126,7 @@ def pastTimes(bot, msg):
 def averageTime(bot, msg):
     if msg.command == "!average":
         username = msg.elements[1].lower()
-        racer = bot.getRacer(username, "refresh" in msg.elements)
+        racer = bot.getRacer(msg.channel, username, "refresh" in msg.elements)
         if len(msg.elements) > 2 and msg.elements[2].isdigit():
             maxResults = int(msg.elements[2])
         else:
@@ -137,10 +139,27 @@ def averageTime(bot, msg):
         message = "Average time for " + username + ": " + formattedTime
         bot.sendmsg(msg.channel, message)
 
+def bestTime(bot, msg):
+    if msg.command == "!best":
+        username = msg.elements[1].lower()
+        racer = bot.getRacer(msg.channel, username, "refresh" in msg.elements)
+        if len(msg.elements) > 2 and msg.elements[2].isdigit():
+            maxResults = int(msg.elements[2])
+        else:
+            maxResults = 5
+
+        sortedTimes = sorted(racer.validTimes())
+
+        message = "Top " + str(maxResults) + " races for " + username + ": "
+        message += ", ".join([str(time) for time in sortedTimes[:maxResults]])
+
+        bot.sendmsg(msg.channel, message)
+        
+
 def completionRate(bot, msg):
     if msg.command == "!rate":
         username = msg.elements[1].lower()
-        racer = bot.getRacer(username, "refresh" in msg.elements)
+        racer = bot.getRacer(msg.channel, username, "refresh" in msg.elements)
         if len(msg.elements) > 2 and msg.elements[2].isdigit():
             maxResults = int(msg.elements[2])
         else:
@@ -160,7 +179,7 @@ def teamTime(bot, msg):
         usernames = msg.elements[1:]
         if "refresh" in usernames:
             usernames.remove("refresh")
-        racers = [bot.getRacer(username, "refresh" in msg.elements) for username in usernames]
+        racers = [bot.getRacer(msg.channel, username, "refresh" in msg.elements) for username in usernames]
         rates = [racer.averageRate() for racer in racers]
         workRates = [1 / rate.total_seconds() for rate in rates]
         totalWorkRate = sum(workRates)
@@ -188,10 +207,11 @@ def help(bot, msg):
 
 def about(bot, msg):
     if msg.command == "!about":
-        message = "Created by Saltor."
+        message = "Version 0.1\n"
+        message += "Created by Saltor."
         bot.sendmsg(msg.channel, message)
 
-allCommands = [racerStats, pastTimes, averageTime, completionRate, teamTime, help, about]
+allCommands = [racerStats, pastTimes, averageTime, bestTime, completionRate, teamTime, help, about]
 
 
 # runs the bot
