@@ -69,7 +69,7 @@ class BingoBot:
                 print colored("RESPONDING TO PING ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~", "blue")
             # chat messages are grey
             elif isMessage(ircmsg):
-                print colored(ircmsg, "grey")
+                print ircmsg
                 msg = Message(ircmsg)
                 for command in self.commands:
                     try:
@@ -181,7 +181,9 @@ def help(bot, msg):
     if msg.command == "!help":
         message = "Commands: !racer, !results, !average, !rate.\n"
         message += "Format is \"!command <racer> [maxResults]\". "
-        message += "If you add \"refresh\" to the end, player data will be reloaded.\n"
+        message += "If you add \"refresh\" to the end, player data will be reloaded. "
+        message += "Note that players with a large race history may take a while to load "
+        message += "when they are first accessed. Race history is cached for subsequent commands."
         bot.sendmsg(msg.channel, message)
 
 def about(bot, msg):
