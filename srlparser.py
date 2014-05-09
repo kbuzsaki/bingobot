@@ -1,7 +1,7 @@
 import json
 import urllib
 import re
-from datetime import timedelta
+from datetime import date, timedelta
 import pprint
 
 API_URL = "http://api.speedrunslive.com/"
@@ -14,6 +14,7 @@ def loadJsonFromUrl(url):
 bingoRegex = re.compile(".*speedrunslive.com/tools/oot-bingo/\?seed=[0-9]+")
 
 def isBingoGoal(goal):
+    goal = goal.lower()
     return bingoRegex.match(goal) and "short" not in goal and "blackout" not in goal
 
 def getStatsUrl(player):
@@ -45,6 +46,7 @@ def getPastBingoResultsJson(player):
     for race in bingoRaces:
         for result in race["results"]:
             if result["player"].lower() == player.lower():
+                result["date"] = race["date"]
                 bingoResults.append(result)
     return bingoResults
 
@@ -61,6 +63,7 @@ def getAverageTime(times):
 class Result:
     def __init__(self, resultJson):
         self.raceid = resultJson["race"]
+        self.date = date.fromtimestamp(float(resultJson["date"]))
         self.time = timedelta(seconds=resultJson["time"])
         self.message = resultJson["message"]
 
@@ -68,7 +71,7 @@ class Result:
         return str(self.time)
 
     def __cmp__(self, result):
-        return compare(self.result, result)
+        return cmp(self.time, result.time)
 
     def isForfeit(self):
         return self.time <= timedelta(0)
