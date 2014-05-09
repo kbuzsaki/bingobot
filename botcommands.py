@@ -21,6 +21,24 @@ def racerStats(bot, msg):
         message = username + " has completed " + str(len(racer.validResults())) + " bingos "
         bot.sendmsg(msg.channel, message)
 
+def lookupRace(bot, msg):
+    if msg.command == "!lookup":
+        username = msg.elements[1].lower()
+        racer = bot.getRacer(msg.channel, username, "refresh" in msg.elements)
+        lookupTime = msg.elements[2].lower()
+        if len(msg.elements) > 3 and msg.elements[3].isdigit():
+            maxResults = int(msg.elements[3])
+        else:
+            maxResults = None
+
+        results = racer.validResults()[:maxResults]
+        matches = [result for result in results if str(result.time) == lookupTime]
+
+        message = username + "'s races with a time of " + lookupTime + ":\n"
+        message += resultsMessage(matches, detailed=True)
+
+        bot.sendmsg(msg.channel, message)
+
 def pastTimes(bot, msg):
     if msg.command == "!results":
         username = msg.elements[1].lower()
@@ -173,7 +191,7 @@ def about(bot, msg):
         message += "Created by Saltor."
         bot.sendmsg(msg.channel, message)
 
-queryCommands = [racerStats]
+queryCommands = [racerStats, lookupRace]
 listCommands = [pastTimes, bestTime, worstTime]
 calculationCommands = [averageTime, medianTime, completionRate, teamTime]
 metaCommands = [help, about]
