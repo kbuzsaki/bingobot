@@ -99,6 +99,18 @@ class BingoBot:
         return self.racers[username]
 
 
+# helper method for bot
+
+def detailedMessage(result):
+        return str(result.date) + ": " + str(result) + " - " + result.raceUrl()
+
+def resultsMessage(results, detailed=False):
+    if not detailed:
+        return ", ".join([str(result) for result in results])
+    else:
+        reps = [detailedMessage(result) for result in results]
+        return "\n".join(reps)
+
 # bot commands
 
 def racerStats(bot, msg):
@@ -117,9 +129,14 @@ def pastTimes(bot, msg):
             maxResults = int(msg.elements[2])
         else:
             maxResults = 10
+        detailed = "detailed" in msg.elements
+
+        results = racer.validResults()[:maxResults]
 
         message = "Past " + str(maxResults) + " races for " + username + ": "
-        message += ", ".join([str(result) for result in racer.validResults()[:maxResults]])
+        if detailed:
+            message += "\n"
+        message += resultsMessage(results, detailed)
 
         bot.sendmsg(msg.channel, message)
 
@@ -147,14 +164,35 @@ def bestTime(bot, msg):
             maxResults = int(msg.elements[2])
         else:
             maxResults = 5
+        detailed = "detailed" in msg.elements
 
-        sortedTimes = sorted(racer.validTimes())
+        results = sorted(racer.validResults())[:maxResults]
 
         message = "Top " + str(maxResults) + " races for " + username + ": "
-        message += ", ".join([str(time) for time in sortedTimes[:maxResults]])
+        if detailed:
+            message += "\n"
+        message += resultsMessage(results, detailed)
 
         bot.sendmsg(msg.channel, message)
-        
+
+def worstTime(bot, msg):
+    if msg.command == "!worst":
+        username = msg.elements[1].lower()
+        racer = bot.getRacer(msg.channel, username, "refresh" in msg.elements)
+        if len(msg.elements) > 2 and msg.elements[2].isdigit():
+            maxResults = int(msg.elements[2])
+        else:
+            maxResults = 5
+        detailed = "detailed" in msg.elements
+
+        results = sorted(racer.validResults(), reverse=True)[:maxResults]
+
+        message = "Bottom " + str(maxResults) + " races for " + username + ": "
+        if detailed:
+            message += "\n"
+        message += resultsMessage(results, detailed)
+
+        bot.sendmsg(msg.channel, message)
 
 def completionRate(bot, msg):
     if msg.command == "!rate":
@@ -198,20 +236,21 @@ def teamTime(bot, msg):
 
 def help(bot, msg):
     if msg.command == "!help":
-        message = "Commands: !racer, !results, !average, !rate.\n"
+        message = "Commands: !racer, !results, !best, !worst, !average, !rate.\n"
         message += "Format is \"!command <racer> [maxResults]\". "
-        message += "If you add \"refresh\" to the end, player data will be reloaded. "
+        message += "Add \"detailed\" to the end of a list command to get dates and urls. "
+        message += "Add \"refresh\" to the end of any command to force reload race data.\n"
         message += "Note that players with a large race history may take a while to load "
         message += "when they are first accessed. Race history is cached for subsequent commands."
         bot.sendmsg(msg.channel, message)
 
 def about(bot, msg):
     if msg.command == "!about":
-        message = "Version 0.1\n"
+        message = "Version 0.2\n"
         message += "Created by Saltor."
         bot.sendmsg(msg.channel, message)
 
-allCommands = [racerStats, pastTimes, averageTime, bestTime, completionRate, teamTime, help, about]
+allCommands = [racerStats, pastTimes, averageTime, bestTime, worstTime, completionRate, teamTime, help, about]
 
 
 # runs the bot
