@@ -1,10 +1,11 @@
 This is an IRC bot for the ZeldaSpeedRuns BingoLeague to be hosted on SpeedRunsLive.
 
 Todo List:
-    - Nicer feedback message when looking someone up for the first time
-    - Have messages over the message limit be sent in multiple chunks
-    - "detailed" mode for times that includes timestamp + url
-    - beforeData and afterDate parameters
     - fix !rate and !teamtime to be more accurate
     - !median to complement !average
+    - searching for a race given a racer and a time
+    - beforeDate and afterDate parameters
+    - Have messages over the message limit be sent in multiple chunks
+    - make !help more readable
+    - "detailed" mode readability improvements? include comment?
 
