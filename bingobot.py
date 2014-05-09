@@ -156,6 +156,23 @@ def averageTime(bot, msg):
         message = "Average time for " + username + ": " + formattedTime
         bot.sendmsg(msg.channel, message)
 
+def medianTime(bot, msg):
+    if msg.command == "!median":
+        username = msg.elements[1].lower()
+        racer = bot.getRacer(msg.channel, username, "refresh" in msg.elements)
+        if len(msg.elements) > 2 and msg.elements[2].isdigit():
+            maxResults = int(msg.elements[2])
+        else:
+            maxResults = 10
+
+        relevantTimes = racer.validTimes()[:maxResults]
+        medianTime = relevantTimes[len(relevantTimes) // 2]
+
+        # gets rid of trailing decimals
+        formattedTime = str(medianTime).split(".")[0]
+        message = "Median time for " + username + ": " + formattedTime
+        bot.sendmsg(msg.channel, message)
+
 def bestTime(bot, msg):
     if msg.command == "!best":
         username = msg.elements[1].lower()
@@ -212,12 +229,18 @@ def completionRate(bot, msg):
         message += " or " + "{0:.2f}".format(goalsPer2Hours) + " goals in 2 hours."
         bot.sendmsg(msg.channel, message)
 
+AVG_BLACKOUT = 3.25
+AVG_REGULAR = 1.3
+AVG_BASE = 0.5
+AVG_OVERLAP = 0.1
+
 def teamTime(bot, msg):
     if msg.command == "!teamtime":
         usernames = msg.elements[1:]
         if "refresh" in usernames:
             usernames.remove("refresh")
         racers = [bot.getRacer(msg.channel, username, "refresh" in msg.elements) for username in usernames]
+
         rates = [racer.averageRate() for racer in racers]
         workRates = [1 / rate.total_seconds() for rate in rates]
         totalWorkRate = sum(workRates)
@@ -250,8 +273,10 @@ def about(bot, msg):
         message += "Created by Saltor."
         bot.sendmsg(msg.channel, message)
 
-allCommands = [racerStats, pastTimes, averageTime, bestTime, worstTime, completionRate, teamTime, help, about]
-
+readCommands = [racerStats, averageTime, medianTime, completionRate, teamTime]
+listCommands = [pastTimes, bestTime, worstTime]
+metaCommands = [help, about]
+allCommands = readCommands + listCommands + metaCommands
 
 # runs the bot
 
