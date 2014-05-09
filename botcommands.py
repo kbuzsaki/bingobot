@@ -173,8 +173,9 @@ def about(bot, msg):
         message += "Created by Saltor."
         bot.sendmsg(msg.channel, message)
 
-readCommands = [racerStats, averageTime, medianTime, completionRate, teamTime]
+queryCommands = [racerStats]
 listCommands = [pastTimes, bestTime, worstTime]
+calculationCommands = [averageTime, medianTime, completionRate, teamTime]
 metaCommands = [help, about]
-allCommands = readCommands + listCommands + metaCommands    
+allCommands = queryCommands + listCommands + calculationCommands + metaCommands    
 
