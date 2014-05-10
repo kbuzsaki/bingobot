@@ -96,6 +96,9 @@ class Racer:
     def forfeitResults(self):
         return [result for result in self.results if result.isForfeit()]
 
+    def completionRate(self):
+        return len(self.validResults()) / float(len(self.results))
+
     def averageTime(self, maxTimes=-1):
         if maxTimes > 0 and maxTimes < len(self.validTimes()):
             times = self.validTimes()[:maxTimes]
