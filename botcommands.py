@@ -1,5 +1,9 @@
+from datetime import timedelta
 
 # helper method for bot
+
+def formatTime(delta):
+    return str(delta).split(".")[0]
 
 def detailedMessage(result):
     return str(result.date) + ": " + str(result) + " - " + result.raceUrl()
@@ -50,8 +54,9 @@ def pastTimes(bot, msg):
         detailed = "detailed" in msg.elements
 
         results = racer.validResults()[:maxResults]
+        resultsUsed = min(maxResults, len(racer.validResults()))
 
-        message = "Past " + str(maxResults) + " races for " + username + ": "
+        message = "Past " + str(resultsUsed) + " races for " + username + ": "
         if detailed:
             message += "\n"
         message += resultsMessage(results, detailed)
@@ -68,10 +73,10 @@ def averageTime(bot, msg):
             maxResults = 10
 
         averageTime = racer.averageTime(maxResults)
+        resultsUsed = min(maxResults, len(racer.validResults()))
 
-        # gets rid of trailing decimals
-        formattedTime = str(averageTime).split(".")[0]
-        message = "Average time for " + username + ": " + formattedTime
+        message = "Average time from " + username + "'s last " + str(resultsUsed)
+        message += " bingos: " + formatTime(averageTime)
         bot.sendmsg(msg.channel, message)
 
 def medianTime(bot, msg):
@@ -86,9 +91,8 @@ def medianTime(bot, msg):
         relevantTimes = racer.validTimes()[:maxResults]
         medianTime = relevantTimes[len(relevantTimes) // 2]
 
-        # gets rid of trailing decimals
-        formattedTime = str(medianTime).split(".")[0]
-        message = "Median time for " + username + ": " + formattedTime
+        message = "Median time from " + username + "'s last " 
+        message += str(len(relevantTimes)) + " bingos: " + formatTime(medianTime)
         bot.sendmsg(msg.channel, message)
 
 def bestTime(bot, msg):
@@ -103,7 +107,7 @@ def bestTime(bot, msg):
 
         results = sorted(racer.validResults())[:maxResults]
 
-        message = "Top " + str(maxResults) + " races for " + username + ": "
+        message = "Top " + str(len(results)) + " races for " + username + ": "
         if detailed:
             message += "\n"
         message += resultsMessage(results, detailed)
@@ -122,13 +126,14 @@ def worstTime(bot, msg):
 
         results = sorted(racer.validResults(), reverse=True)[:maxResults]
 
-        message = "Bottom " + str(maxResults) + " races for " + username + ": "
+        message = "Bottom " + str(len(results)) + " races for " + username + ": "
         if detailed:
             message += "\n"
         message += resultsMessage(results, detailed)
 
         bot.sendmsg(msg.channel, message)
 
+# broken, disabled
 def completionRate(bot, msg):
     if msg.command == "!rate":
         username = msg.elements[1].lower()
@@ -141,16 +146,19 @@ def completionRate(bot, msg):
         rate = racer.averageRate(maxResults)
         goalsPer2Hours = timedelta(hours=2).total_seconds() / rate.total_seconds()
         
-        # get rid of trailing decimals
-        formattedRate = str(rate).split(".")[0]
-        message = "Average rate for " + username + ": " + formattedRate + " per goal, "
+        message = "Average rate for " + username + ": " + formatTime(rate) + " per goal, "
         message += " or " + "{0:.2f}".format(goalsPer2Hours) + " goals in 2 hours."
         bot.sendmsg(msg.channel, message)
 
-AVG_BLACKOUT = 3.25
-AVG_REGULAR = 1.3
-AVG_BASE = 0.5
-AVG_OVERLAP = 0.1
+# constants and helpers for teamTime()
+AVG_BLACKOUT = timedelta(hours=3, minutes=15)
+AVG_REGULAR = timedelta(hours=1, minutes=18)
+AVG_BASE = timedelta(minutes=30)
+AVG_OVERLAP = timedelta(minutes=6)
+
+def multDelta(delta, factor):
+    seconds = delta.total_seconds() * factor
+    return timedelta(seconds=seconds)
 
 def teamTime(bot, msg):
     if msg.command == "!teamtime":
@@ -159,25 +167,30 @@ def teamTime(bot, msg):
             usernames.remove("refresh")
         racers = [bot.getRacer(msg.channel, username, "refresh" in msg.elements) for username in usernames]
 
-        rates = [racer.averageRate() for racer in racers]
-        workRates = [1 / rate.total_seconds() for rate in rates]
-        totalWorkRate = sum(workRates)
-        totalRate = timedelta(seconds=(1 / totalWorkRate))
+        # calcualtes the effective goal completion rate of each racer
+        netAverages = [racer.averageTime() - AVG_BASE for racer in racers]
+        successRates = [max(racer.completionRate(), 0.5) for racer in racers]
+        tuples = zip(netAverages, successRates)
+        effectiveRates = [multDelta(delta, 1 / successrate) for (delta, successrate) in tuples]
+
+        # calculates the combined "work rate" or contribution rate of the team
+        workRates = [1 / rate.total_seconds() for rate in effectiveRates]
+        combinedWorkRate = sum(workRates)
+        # work rate is then used to calculate net average time for a normal bingo
+        combinedRate = timedelta(seconds=(1 / combinedWorkRate))
+
+        # the team's net average time is then scaled up to blackout scale
+        ratio = (AVG_BLACKOUT - AVG_BASE).total_seconds() / (AVG_REGULAR - AVG_BASE).total_seconds() 
+        # the base 30 minutes are added back to convert the net time to total time
+        blackoutTime = multDelta(combinedRate, ratio) + AVG_BASE + AVG_OVERLAP
         
-        goalsPerHour = timedelta(hours=1).total_seconds() / totalRate.total_seconds()
-        blackoutTime = 25 / goalsPerHour
-        
-        # get rid of trailing decimals
-        formattedRate = str(totalRate).split(".")[0]
-        teamName = ", ".join(usernames)
-        message = "Average rate for " + teamName + ": " + formattedRate + " per goal, "
-        message += " or " + "{0:.2f}".format(goalsPerHour * 2) + " goals in 2 hours.\n"
-        message += "They would take about " + str(blackoutTime) + " to complete a blackout."
+        message = "Team \"" + ", ".join(usernames) + "\" would take about "
+        message += formatTime(blackoutTime) + " to complete a blackout."
         bot.sendmsg(msg.channel, message)
 
 def help(bot, msg):
     if msg.command == "!help":
-        message = "Commands: !racer, !results, !lookup, !best, !worst, !average, !median, !rate.\n"
+        message = "Commands: !racer, !results, !lookup, !best, !worst, !average, !median, !teamtime.\n"
         message += "Format is \"!command <racer> [maxResults]\". "
         message += "!lookup requires a time after the racer name as well.\n"
         message += "Add \"detailed\" to the end of a list command to get dates and urls. "
@@ -189,12 +202,12 @@ def help(bot, msg):
 def about(bot, msg):
     if msg.command == "!about":
         message = "Version 0.2\n"
-        message += "Created by Saltor."
+        message += "Created by Saltor. !teamtime algorithm by Gombill."
         bot.sendmsg(msg.channel, message)
 
 queryCommands = [racerStats, lookupRace]
 listCommands = [pastTimes, bestTime, worstTime]
-calculationCommands = [averageTime, medianTime, completionRate, teamTime]
+calculationCommands = [averageTime, medianTime, teamTime]
 metaCommands = [help, about]
 allCommands = queryCommands + listCommands + calculationCommands + metaCommands    
 

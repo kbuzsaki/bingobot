@@ -1,7 +1,6 @@
 This is an IRC bot for the ZeldaSpeedRuns BingoLeague to be hosted on SpeedRunsLive.
 
 Todo List:
-    - fix !rate and !teamtime to be more accurate
     - beforeDate and afterDate parameters
     - Have messages over the message limit be sent in multiple chunks
     - make !help more readable
