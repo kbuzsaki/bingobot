@@ -5,4 +5,5 @@ Todo List:
     - Have messages over the message limit be sent in multiple chunks
     - make !help more readable
     - "detailed" mode readability improvements? include comment?
+    - make !lookup work for wildcards, e.g. 1:33:xx or 1:33:**
 
