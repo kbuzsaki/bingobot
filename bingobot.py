@@ -105,8 +105,8 @@ class BingoBot:
 # runs the bot
 
 server = "irc2.speedrunslive.com"
-channel = "#testest"
-botnick = "TestBingoBot"
+channel = "#test"
+botnick = "BingoBot"
 
 bingoBot = BingoBot(botnick, server, channel, commands = allCommands)
 bingoBot.connect()

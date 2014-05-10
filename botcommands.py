@@ -152,9 +152,9 @@ def completionRate(bot, msg):
 
 # constants and helpers for teamTime()
 AVG_BLACKOUT = timedelta(hours=3, minutes=15)
-AVG_REGULAR = timedelta(hours=1, minutes=18)
+AVG_REGULAR = timedelta(hours=1, minutes=20)
 AVG_BASE = timedelta(minutes=30)
-AVG_OVERLAP = timedelta(minutes=6)
+AVG_OVERLAP = timedelta(minutes=5)
 
 def multDelta(delta, factor):
     seconds = delta.total_seconds() * factor
@@ -168,7 +168,7 @@ def teamTime(bot, msg):
         racers = [bot.getRacer(msg.channel, username, "refresh" in msg.elements) for username in usernames]
 
         # calcualtes the effective goal completion rate of each racer
-        netAverages = [racer.averageTime() - AVG_BASE for racer in racers]
+        netAverages = [racer.averageTime(15) - AVG_BASE for racer in racers]
         successRates = [max(racer.completionRate(), 0.5) for racer in racers]
         tuples = zip(netAverages, successRates)
         effectiveRates = [multDelta(delta, 1 / successrate) for (delta, successrate) in tuples]
@@ -201,7 +201,7 @@ def help(bot, msg):
 
 def about(bot, msg):
     if msg.command == "!about":
-        message = "Version 0.2\n"
+        message = "Version 0.3\n"
         message += "Created by Saltor. !teamtime algorithm by Gombill."
         bot.sendmsg(msg.channel, message)
 
