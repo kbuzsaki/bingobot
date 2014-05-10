@@ -32,11 +32,14 @@ def getPastRaces(player):
     resultsJson = loadJsonFromUrl(getResultsUrl(player))
     return resultsJson["pastraces"]
 
+BINGO_V8_RELEASE = date(2013, 9, 11)
+
 def getPastBingoRaces(player):
     pastRaces = getPastRaces(player)
     bingoRaces = []
     for race in pastRaces:
-        if isBingoGoal(race["goal"]):
+        raceDate = date.fromtimestamp(float(race["date"]))
+        if isBingoGoal(race["goal"]) and raceDate > BINGO_V8_RELEASE:
             bingoRaces.append(race)
     return bingoRaces
 
