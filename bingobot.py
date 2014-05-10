@@ -1,4 +1,5 @@
 import socket
+import traceback
 from datetime import timedelta
 from termcolor import colored, cprint
 from srlparser import Racer, Result
@@ -77,11 +78,12 @@ class BingoBot:
                     try:
                         command(self, msg)
                     except NameException as e:
-                        print "Name Exception:" + str(e)
-                        message = "There was a problem looking up data for " + str(e) + "."
+                        print colored("Name Exception: " + str(e), "red")
+                        message = "There was a problem looking up data for " + str(e) + ". "
+                        message += "Do they have an SRL profile?"
                         self.sendmsg(msg.channel, message)
                     except Exception as e:
-                        print e
+                        print colored(traceback.format_exc(), "red")
                         self.sendmsg(msg.channel, "Something weird happened...")
             # all other messages are green
             else:
