@@ -177,10 +177,11 @@ def teamTime(bot, msg):
 
 def help(bot, msg):
     if msg.command == "!help":
-        message = "Commands: !racer, !results, !best, !worst, !average, !rate.\n"
+        message = "Commands: !racer, !results, !lookup, !best, !worst, !average, !median, !rate.\n"
         message += "Format is \"!command <racer> [maxResults]\". "
+        message += "!lookup requires a time after the racer name as well.\n"
         message += "Add \"detailed\" to the end of a list command to get dates and urls. "
-        message += "Add \"refresh\" to the end of any command to force reload race data.\n"
+        message += "Add \"refresh\" to the end of any command to force reload race data."
         message += "Note that players with a large race history may take a while to load "
         message += "when they are first accessed. Race history is cached for subsequent commands."
         bot.sendmsg(msg.channel, message)
