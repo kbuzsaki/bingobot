@@ -23,6 +23,7 @@ def racerStats(bot, msg):
         racer = bot.getRacer(msg.channel, username, "refresh" in msg.elements)
 
         message = username + " has completed " + str(len(racer.validResults())) + " bingos "
+        message += "and forfeited " + str(len(racer.forfeitResults()))
         bot.sendmsg(msg.channel, message)
 
 def lookupRace(bot, msg):
