@@ -19,126 +19,92 @@ def resultsMessage(results, detailed=False):
 
 def racerStats(bot, msg):
     if msg.command == "!racer":
-        username = msg.elements[1].lower()
-        racer = bot.getRacer(msg.channel, username, "refresh" in msg.elements)
+        racer = bot.getRacer(msg.channel, msg.username, msg.refresh)
 
-        message = username + " has completed " + str(len(racer.validResults())) + " bingos "
+        message = msg.username + " has completed " + str(len(racer.validResults())) + " bingos "
         message += "and forfeited " + str(len(racer.forfeitResults()))
         bot.sendmsg(msg.channel, message)
 
 def lookupRace(bot, msg):
     if msg.command == "!lookup":
-        username = msg.elements[1].lower()
-        racer = bot.getRacer(msg.channel, username, "refresh" in msg.elements)
-        lookupTime = msg.elements[2].lower()
-        if len(msg.elements) > 3 and msg.elements[3].isdigit():
-            maxResults = int(msg.elements[3])
-        else:
-            maxResults = None
+        racer = bot.getRacer(msg.channel, msg.username, msg.refresh)
+        lookupTime = msg.times[0]
 
-        results = racer.validResults()[:maxResults]
-        matches = [result for result in results if str(result.time) == lookupTime]
+        results = racer.validResults()[:]
+        matches = [result for result in results if str(result.time) == str(lookupTime)]
 
-        message = username + "'s races with a time of " + lookupTime + ":\n"
+        message = msg.username + "'s races with a time of " + str(lookupTime) + ":\n"
         message += resultsMessage(matches, detailed=True)
 
         bot.sendmsg(msg.channel, message)
 
 def pastTimes(bot, msg):
     if msg.command == "!results":
-        username = msg.elements[1].lower()
-        racer = bot.getRacer(msg.channel, username, "refresh" in msg.elements)
-        if len(msg.elements) > 2 and msg.elements[2].isdigit():
-            maxResults = int(msg.elements[2])
-        else:
-            maxResults = 10
-        detailed = "detailed" in msg.elements
+        racer = bot.getRacer(msg.channel, msg.username, msg.refresh)
 
-        results = racer.validResults()[:maxResults]
-        resultsUsed = min(maxResults, len(racer.validResults()))
+        results = racer.validResults()[msg.minimum:msg.maximum]
+        resultsUsed = min(msg.maximum - msg.minimum, len(racer.validResults()))
 
-        message = "Past " + str(resultsUsed) + " races for " + username + ": "
-        if detailed:
+        message = "Past " + str(resultsUsed) + " races for " + msg.username + ": "
+        if msg.detailed:
             message += "\n"
-        message += resultsMessage(results, detailed)
+        message += resultsMessage(results, msg.detailed)
 
         bot.sendmsg(msg.channel, message)
 
 def averageTime(bot, msg):
     if msg.command == "!average":
-        username = msg.elements[1].lower()
-        racer = bot.getRacer(msg.channel, username, "refresh" in msg.elements)
-        if len(msg.elements) > 2 and msg.elements[2].isdigit():
-            maxResults = int(msg.elements[2])
-        else:
-            maxResults = 10
+        racer = bot.getRacer(msg.channel, msg.username, msg.refresh)
 
-        averageTime = racer.averageTime(maxResults)
-        resultsUsed = min(maxResults, len(racer.validResults()))
+        times = racer.validTimes()[msg.minimum:msg.maximum]
+        averageTime = sum(times, timedelta()) / len(times)
+        resultsUsed = min(msg.maximum - msg.minimum, len(racer.validResults()))
 
-        message = "Average time from " + username + "'s last " + str(resultsUsed)
+        message = "Average time from " + msg.username + "'s last " + str(resultsUsed)
         message += " bingos: " + formatTime(averageTime)
         bot.sendmsg(msg.channel, message)
 
 def medianTime(bot, msg):
     if msg.command == "!median":
-        username = msg.elements[1].lower()
-        racer = bot.getRacer(msg.channel, username, "refresh" in msg.elements)
-        if len(msg.elements) > 2 and msg.elements[2].isdigit():
-            maxResults = int(msg.elements[2])
-        else:
-            maxResults = 10
+        racer = bot.getRacer(msg.channel, msg.username, msg.refresh)
 
-        relevantTimes = racer.validTimes()[:maxResults]
+        relevantTimes = racer.validTimes()[msg.minimum:msg.maximum]
         medianTime = relevantTimes[len(relevantTimes) // 2]
 
-        message = "Median time from " + username + "'s last " 
+        message = "Median time from " + msg.username + "'s last " 
         message += str(len(relevantTimes)) + " bingos: " + formatTime(medianTime)
         bot.sendmsg(msg.channel, message)
 
 def bestTime(bot, msg):
     if msg.command == "!best":
-        username = msg.elements[1].lower()
-        racer = bot.getRacer(msg.channel, username, "refresh" in msg.elements)
-        if len(msg.elements) > 2 and msg.elements[2].isdigit():
-            maxResults = int(msg.elements[2])
-        else:
-            maxResults = 5
-        detailed = "detailed" in msg.elements
+        racer = bot.getRacer(msg.channel, msg.username, msg.refresh)
 
-        results = sorted(racer.validResults())[:maxResults]
+        results = sorted(racer.validResults())[:msg.getMaximum(default=5)]
 
-        message = "Top " + str(len(results)) + " races for " + username + ": "
-        if detailed:
+        message = "Top " + str(len(results)) + " races for " + msg.username + ": "
+        if msg.detailed:
             message += "\n"
-        message += resultsMessage(results, detailed)
+        message += resultsMessage(results, msg.detailed)
 
         bot.sendmsg(msg.channel, message)
 
 def worstTime(bot, msg):
     if msg.command == "!worst":
-        username = msg.elements[1].lower()
-        racer = bot.getRacer(msg.channel, username, "refresh" in msg.elements)
-        if len(msg.elements) > 2 and msg.elements[2].isdigit():
-            maxResults = int(msg.elements[2])
-        else:
-            maxResults = 5
-        detailed = "detailed" in msg.elements
+        racer = bot.getRacer(msg.channel, msg.username, msg.refresh)
 
-        results = sorted(racer.validResults(), reverse=True)[:maxResults]
+        results = sorted(racer.validResults(), reverse=True)[:msg.getMaximum(default=5)]
 
-        message = "Bottom " + str(len(results)) + " races for " + username + ": "
-        if detailed:
+        message = "Bottom " + str(len(results)) + " races for " + msg.username + ": "
+        if msg.detailed:
             message += "\n"
-        message += resultsMessage(results, detailed)
+        message += resultsMessage(results, msg.detailed)
 
         bot.sendmsg(msg.channel, message)
 
 # broken, disabled
 def completionRate(bot, msg):
     if msg.command == "!rate":
-        username = msg.elements[1].lower()
-        racer = bot.getRacer(msg.channel, username, "refresh" in msg.elements)
+        racer = bot.getRacer(msg.channel, msg.username, msg.refresh)
         if len(msg.elements) > 2 and msg.elements[2].isdigit():
             maxResults = int(msg.elements[2])
         else:
@@ -163,10 +129,7 @@ def multDelta(delta, factor):
 
 def teamTime(bot, msg):
     if msg.command == "!teamtime":
-        usernames = msg.elements[1:]
-        if "refresh" in usernames:
-            usernames.remove("refresh")
-        racers = [bot.getRacer(msg.channel, username, "refresh" in msg.elements) for username in usernames]
+        racers = [bot.getRacer(msg.channel, username, msg.refresh) for username in msg.usernames]
 
         # calcualtes the effective goal completion rate of each racer
         netAverages = [racer.averageTime(15) - AVG_BASE for racer in racers]
@@ -185,7 +148,7 @@ def teamTime(bot, msg):
         # the base 30 minutes are added back to convert the net time to total time
         blackoutTime = multDelta(combinedRate, ratio) + AVG_BASE + AVG_OVERLAP
         
-        message = "Team \"" + ", ".join(usernames) + "\" would take about "
+        message = "Team \"" + ", ".join(msg.usernames) + "\" would take about "
         message += formatTime(blackoutTime) + " to complete a blackout."
         bot.sendmsg(msg.channel, message)
 
