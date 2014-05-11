@@ -3,7 +3,6 @@ import traceback
 from datetime import timedelta
 from termcolor import colored, cprint
 from srlparser import Racer, Result
-from botcommands import allCommands
 
 def isPing(ircmsg):
     return "PING :" in ircmsg
@@ -103,15 +102,4 @@ class BingoBot:
             except:
                 raise NameException(username)
         return self.racers[username]
-
-
-# runs the bot
-
-server = "irc2.speedrunslive.com"
-channel = "#test"
-botnick = "BingoBot"
-
-bingoBot = BingoBot(botnick, server, channel, commands = allCommands)
-bingoBot.connect()
-bingoBot.listen()
 
