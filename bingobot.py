@@ -20,7 +20,7 @@ class NameException(Exception):
 
 wordPattern = re.compile("^[a-zA-z_]+$")
 numberPattern = re.compile("^\d+$")
-timePattern = re.compile("^\d?\d:\d\d:\d\d$")
+timePattern = re.compile("^\d?\d:\d\d(:\d\d)?$")
 
 def parseTime(timestr):
     data = timestr.split(":")
