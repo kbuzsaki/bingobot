@@ -171,7 +171,7 @@ def teamTime(bot, msg):
         # calcualtes the effective goal completion rate of each racer
         netAverages = [racer.averageTime(15) - AVG_BASE for racer in racers]
         successRates = [max(racer.completionRate(), 0.5) for racer in racers]
-        tuples = zip(netAverages, successRates)
+        tuples = list(zip(netAverages, successRates))
         effectiveRates = [multDelta(delta, 1 / successrate) for (delta, successrate) in tuples]
 
         # calculates the combined "work rate" or contribution rate of the team

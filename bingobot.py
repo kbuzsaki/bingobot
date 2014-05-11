@@ -48,46 +48,49 @@ class BingoBot:
         self.ircsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.racers = dict()
 
+    def send(self, s):
+        self.ircsock.send(s.encode())
+
     def connect(self):
         self.ircsock.connect((self.server, 6667))
-        self.ircsock.send("USER " + self.nick + " " + self.nick + " " + self.nick + " :BingoBot yo\n")
-        self.ircsock.send("NICK " + self.nick + "\n")
+        self.send("USER " + self.nick + " " + self.nick + " " + self.nick + " :BingoBot yo\n")
+        self.send("NICK " + self.nick + "\n")
 
     def sendmsg(self, chan, msg):
         for line in msg.strip().split("\n"):
-            self.ircsock.send("PRIVMSG " + chan + " :" + line + "\n")
+            self.send("PRIVMSG " + chan + " :" + line + "\n")
 
     def joinchan(self, chan):
-        self.ircsock.send("JOIN " + chan + "\n")
+        self.send("JOIN " + chan + "\n")
 
     def listen(self):
         while True:
             ircmsg = self.ircsock.recv(2048)
-            ircmsg = str(ircmsg.strip('\n\r'))
+            ircmsg = ircmsg.decode().strip()
             # pings are blue
             if isPing(ircmsg):
-                print colored(ircmsg, "blue")
+                print(colored(ircmsg, "blue"))
                 pingmsg = ircmsg.split("PING :")[1]
-                self.ircsock.send("PONG :" + pingmsg + "\n")
-                print colored("RESPONDING TO PING ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~", "blue")
+                self.send("PONG :" + pingmsg + "\n")
+                print(colored("RESPONDING TO PING ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~", "blue"))
             # chat messages are grey
             elif isMessage(ircmsg):
-                print ircmsg
+                print(ircmsg)
                 msg = Message(ircmsg)
                 for command in self.commands:
                     try:
                         command(self, msg)
                     except NameException as e:
-                        print colored("Name Exception: " + str(e), "red")
+                        print(colored(traceback.format_exc(), "red"))
                         message = "There was a problem looking up data for " + str(e) + ". "
                         message += "Do they have an SRL profile?"
                         self.sendmsg(msg.channel, message)
                     except Exception as e:
-                        print colored(traceback.format_exc(), "red")
+                        print(colored(traceback.format_exc(), "red"))
                         self.sendmsg(msg.channel, "Something weird happened...")
             # all other messages are green
             else:
-                print colored(ircmsg, "green")
+                print(colored(ircmsg, "green"))
             # weird hack thing for joining channels?
             if ircmsg.find("End of /MOTD"):
                 self.joinchan(self.channel)
@@ -105,8 +108,8 @@ class BingoBot:
 # runs the bot
 
 server = "irc2.speedrunslive.com"
-channel = "#test"
-botnick = "BingoBot"
+channel = "#testest"
+botnick = "TestBingoBot"
 
 bingoBot = BingoBot(botnick, server, channel, commands = allCommands)
 bingoBot.connect()

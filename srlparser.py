@@ -1,5 +1,5 @@
 import json
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import re
 from datetime import date, timedelta
 import pprint
@@ -7,8 +7,8 @@ import pprint
 API_URL = "http://api.speedrunslive.com/"
 
 def loadJsonFromUrl(url):
-    jsonFile = urllib.urlopen(url)
-    jsonDict = json.loads(jsonFile.read())
+    jsonFile = urllib.request.urlopen(url)
+    jsonDict = json.loads(jsonFile.read().decode())
     return jsonDict
 
 bingoRegex = re.compile(".*speedrunslive.com/tools/oot-bingo/\?seed=[0-9]+")
@@ -73,8 +73,8 @@ class Result:
     def __str__(self):
         return str(self.time)
 
-    def __cmp__(self, result):
-        return cmp(self.time, result.time)
+    def __lt__(self, result):
+        return self.time < result.time
 
     def isForfeit(self):
         return self.time <= timedelta(0)
