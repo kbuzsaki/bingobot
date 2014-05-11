@@ -1,3 +1,6 @@
+NOTE: This version of bingobot is for Python 2.7 and is no longer active.
+Prefer the Python 3 version now on the master branch.
+
 This is an IRC bot for the ZeldaSpeedRuns BingoLeague to be hosted on SpeedRunsLive.
 
 Todo List:
