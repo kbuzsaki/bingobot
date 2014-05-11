@@ -76,12 +76,15 @@ class Message:
 
     @property
     def maximum(self):
+        return self.getMaximum()
+
+    def getMaximum(self, default=10):
         if len(self.numbers) > 1:
             return self.numbers[1]
         elif len(self.numbers) > 0:
             return self.numbers[0]
         else:
-            return 10
+            return default
 
     @property
     def times(self):
