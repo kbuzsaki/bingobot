@@ -1,5 +1,6 @@
 import socket
 import traceback
+import re
 from datetime import timedelta
 from termcolor import colored, cprint
 from srlparser import Racer, Result
@@ -16,6 +17,17 @@ def hello(bot, msg):
 
 class NameException(Exception):
     pass
+
+wordPattern = re.compile("[a-zA-z_]+")
+numberPattern = re.compile("\d+")
+timePattern = re.compile("\d?\d:\d\d:\d\d")
+
+def parseTime(timestr):
+    data = timestr.split(":")
+    hours = int(data[0])
+    minutes = int(data[1])
+    seconds = float(data[2]) if len(data) > 2 else 0.0
+    return timedelta(hours=hours, minutes=minutes, seconds=seconds)
 
 class Message:
     def __init__(self, ircmsg):
@@ -36,6 +48,52 @@ class Message:
     @property
     def command(self):
         return self.elements[0]
+
+    @property
+    def words(self):
+        return [element for element in self.elements if wordPattern.match(element)]
+
+    @property
+    def usernames(self):
+        words = self.words
+        if "refresh" in words:
+            words.remove("refresh")
+        if "detailed" in words:
+            words.remove("detailed")
+        return words
+
+    @property
+    def username(self):
+        return self.usernames[0]
+
+    @property
+    def numbers(self):
+        return [int(element) for element in self.elements if numberPattern.match(element)]
+
+    @property
+    def minimum(self):
+        return self.numbers[0] if len(self.numbers) > 1 else 0
+
+    @property
+    def maximum(self):
+        if len(self.numbers) > 1:
+            return self.numbers[1]
+        elif len(self.numbers) > 0:
+            return self.numbers[0]
+        else:
+            return 10
+
+    @property
+    def times(self):
+        return [dateutil.parser.parse(el) for el in self.elements if timePattern.match(el)]
+
+    @property
+    def refresh(self):
+        return "refresh" in self.elements
+
+    @property
+    def detailed(self):
+        return "detailed" in self.elements
 
 
 class BingoBot:
