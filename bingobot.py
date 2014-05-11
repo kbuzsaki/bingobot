@@ -64,7 +64,10 @@ class Message:
 
     @property
     def username(self):
-        return self.usernames[0]
+        if len(self.usernames) > 0:
+            return self.usernames[0]
+        else:
+            return self.sender
 
     @property
     def numbers(self):
