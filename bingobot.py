@@ -18,9 +18,9 @@ def hello(bot, msg):
 class NameException(Exception):
     pass
 
-wordPattern = re.compile("[a-zA-z_]+")
-numberPattern = re.compile("\d+")
-timePattern = re.compile("\d?\d:\d\d:\d\d")
+wordPattern = re.compile("^[a-zA-z_]+$")
+numberPattern = re.compile("^\d+$")
+timePattern = re.compile("^\d?\d:\d\d:\d\d$")
 
 def parseTime(timestr):
     data = timestr.split(":")
@@ -85,7 +85,7 @@ class Message:
 
     @property
     def times(self):
-        return [dateutil.parser.parse(el) for el in self.elements if timePattern.match(el)]
+        return [parseTime(el) for el in self.elements if timePattern.match(el)]
 
     @property
     def refresh(self):
