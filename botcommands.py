@@ -132,8 +132,9 @@ def teamTime(bot, msg):
         racers = [bot.getRacer(msg.channel, username, msg.refresh) for username in msg.usernames]
 
         # calcualtes the effective goal completion rate of each racer
-        netAverages = [racer.averageTime(15) - AVG_BASE for racer in racers]
-        successRates = [max(racer.completionRate(), 0.5) for racer in racers]
+        times = [racer.averageTime(15) for racer in racers] + msg.times
+        netAverages = [time - AVG_BASE for time in times]
+        successRates = [max(racer.completionRate(), 0.5) for racer in racers] + [1.0] * len(msg.times)
         tuples = list(zip(netAverages, successRates))
         effectiveRates = [multDelta(delta, 1 / successrate) for (delta, successrate) in tuples]
 
@@ -148,8 +149,8 @@ def teamTime(bot, msg):
         # the base 30 minutes are added back to convert the net time to total time
         blackoutTime = multDelta(combinedRate, ratio) + AVG_BASE + AVG_OVERLAP
         
-        message = "Team \"" + ", ".join(msg.usernames) + "\" would take about "
-        message += formatTime(blackoutTime) + " to complete a blackout."
+        message = "Team \"" + ", ".join(msg.usernames + [str(time) for time in msg.times]) 
+        message += "\" would take about " + formatTime(blackoutTime) + " to complete a blackout."
         bot.sendmsg(msg.channel, message)
 
 def help(bot, msg):
