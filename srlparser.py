@@ -11,7 +11,7 @@ def loadJsonFromUrl(url):
     jsonDict = json.loads(jsonFile.read().decode())
     return jsonDict
 
-bingoRegex = re.compile(".*speedrunslive.com/tools/oot-bingo/\?seed=[0-9]+")
+bingoRegex = re.compile(".*speedrunslive.com/tools/oot-bingo/\?.*seed=[0-9]+")
 
 def isBingoGoal(goal):
     goal = goal.lower()
