@@ -6,4 +6,7 @@ Todo List:
     - make !help more readable
     - "detailed" mode readability improvements? include comment?
     - make !lookup work for wildcards, e.g. 1:33:xx or 1:33:**
+    - add support for giubot style cards
+    - provide parsing support in Message to find all names, times, numbers, ranges
+    - team balancer
 
