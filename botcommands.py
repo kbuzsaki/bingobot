@@ -128,9 +128,8 @@ def multDelta(delta, factor):
     seconds = delta.total_seconds() * factor
     return timedelta(seconds=seconds)
 
-def getTeamWorkRates(times):
+def getTeamWorkRates(times, successRates):
     netAverages = [time - AVG_BASE for time in times]
-    successRates = [max(racer.completionRate(), 0.5) for racer in racers] + [1.0] * len(msg.times)
     tuples = list(zip(netAverages, successRates))
     effectiveRates = [multDelta(delta, 1 / successrate) for (delta, successrate) in tuples]
 
@@ -156,7 +155,8 @@ def teamTime(bot, msg):
 
         # calcualtes the effective goal completion rate of each racer
         times = [racer.averageTime(15) for racer in racers] + msg.times
-        blackoutTime = getTeamTime(getTeamWorkRates(times))
+        successRates = [max(racer.completionRate(), 0.5) for racer in racers] + [1.0] * len(msg.times)
+        blackoutTime = getTeamTime(getTeamWorkRates(times, successRates))
         
         message = "Team \"" + ", ".join(msg.usernames + [str(time) for time in msg.times]) 
         message += "\" would take about " + formatTime(blackoutTime) + " to complete a blackout."
