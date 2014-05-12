@@ -217,7 +217,7 @@ def help(bot, msg):
 
     if search == None:
         message = "Commands: !racer, !results, !best, !worst, !lookup, !average, "
-        message += "!median, !teamtime, !about.\n"
+        message += "!median, !teamtime, !balance, !about.\n"
         message += "Run !help <command> to get detailed help for a command."
     elif "racer" in search:
         message = "Looks up a racer's bingo history including total completed and forfeited. "
@@ -274,7 +274,7 @@ def help(bot, msg):
 
 def about(bot, msg):
     if msg.command == "!about":
-        message = "Version 0.4\n"
+        message = "Version 0.5\n"
         message += "Created by Saltor. !teamtime algorithm by Gombill."
         bot.sendmsg(msg.channel, message)
 
