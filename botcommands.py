@@ -254,6 +254,12 @@ def help(bot, msg):
         message += REFRESH_MESSAGE + "\n"
         message += "Examples: \"!teamtime bradwickliffe1997 gombill saltor\", "
         message += "\"!teamtime " + NAME + " 1:20:15 1:34:17\""
+    elif "balance" in search:
+        message = "Finds the optimally balanced teams for a set of 6 players. "
+        message += "Uses each player's average from their past 15 bingo results. "
+        message += "Alternatively, you can supply exact times to use in the calculation. "
+        message += REFRESH_MESSAGE + "\n"
+        message += "Example: \"!balance bradwickliffe1997 gombill saltor thecowness balatee exodus\"."
     elif "help" in search:
         message = "Displays a help message explaining how to use a command.\n"
         message += "Examples: \"!help\", \"!help !results\""
