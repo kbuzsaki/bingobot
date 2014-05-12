@@ -191,18 +191,18 @@ def balance(bot, msg):
                 teamOne = [participants[0], participants[x], participants[y]]
                 teamTwo = [racer for racer in participants if racer not in teamOne]
                 rateDiff = abs(sumRates(teamOne) - sumRates(teamTwo))
-                print(rateDiff)
                 if rateDiff < optimalRateDiff:
-                    print("New optimal found!")
                     optimalTeamOne = teamOne
                     optimalTeamTwo = teamTwo
                     optimalRateDiff = rateDiff
 
         teamOneNames = [name for (rate, name) in optimalTeamOne]
+        teamOneTime = getTeamTime([rate for (rate, name) in optimalTeamOne])
         teamTwoNames = [name for (rate, name) in optimalTeamTwo]
+        teamTwoTime = getTeamTime([rate for (rate, name) in optimalTeamTwo])
 
-        message = "Team one: \"" + ", ".join(teamOneNames) + "\", "
-        message += "Team two: \"" + ", ".join(teamTwoNames) + "\". "
+        message = "Team one: \"" + ", ".join(teamOneNames) + "\" (" + formatTime(teamOneTime) + ")\n"
+        message += "Team two: \"" + ", ".join(teamTwoNames) + "\" (" + formatTime(teamTwoTime) + ")"
         bot.sendmsg(msg.channel, message)
 
 NAME = "RacerName"
