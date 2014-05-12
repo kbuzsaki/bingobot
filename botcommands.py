@@ -153,6 +153,50 @@ def teamTime(bot, msg):
         message += "\" would take about " + formatTime(blackoutTime) + " to complete a blackout."
         bot.sendmsg(msg.channel, message)
 
+def balance(bot, msg):
+    if msg.command == "!balance":
+        racers = [bot.getRacer(msg.channel, username, msg.refresh) for username in msg.usernames]
+
+        # calcualtes the effective goal completion rate of each racer
+        stats = [(racer.averageTime(15), racer.completionRate(), racer.username) for racer in racers]
+        adjustedStats = [(time - AVG_BASE, successRate, name) for (time, successRate, name) in stats]
+        participants = [(multDelta(time, 1 / rate), name) for (time, rate, name) in adjustedStats] 
+        participants += [(time - AVG_BASE, str(time)) for time in msg.times]
+        
+        # ensure that 6 participants have been passed
+        if len(participants) != 6:
+            message = "Please provide a total of 6 usernames or times to balance"
+            bot.sendmsg(msg.channel, message)
+            return
+
+        # calculates the work rate for each racer
+        participants = [(1 / rate.total_seconds(), name) for (rate, name) in participants]
+
+        def sumRates(participants):
+            return sum([rate for (rate, name) in participants])
+
+        optimalTeamOne = [participants[0], participants[1], participants[2]]
+        optimalTeamTwo = [racer for racer in participants if racer not in optimalTeamOne]
+        optimalRateDiff = abs(sumRates(optimalTeamOne) - sumRates(optimalTeamTwo))
+        for x in range(1,6):
+            for y in range(x,6):
+                teamOne = [participants[0], participants[x], participants[y]]
+                teamTwo = [racer for racer in participants if racer not in teamOne]
+                rateDiff = abs(sumRates(teamOne) - sumRates(teamTwo))
+                print(rateDiff)
+                if rateDiff < optimalRateDiff:
+                    print("New optimal found!")
+                    optimalTeamOne = teamOne
+                    optimalTeamTwo = teamTwo
+                    optimalRateDiff = rateDiff
+
+        teamOneNames = [name for (rate, name) in optimalTeamOne]
+        teamTwoNames = [name for (rate, name) in optimalTeamTwo]
+
+        message = "Team one: \"" + ", ".join(teamOneNames) + "\", "
+        message += "Team two: \"" + ", ".join(teamTwoNames) + "\". "
+        bot.sendmsg(msg.channel, message)
+
 NAME = "RacerName"
 RANGE_MESSAGE = "Optionally, you can specify a maximum number of races or range of races to use. "
 REFRESH_MESSAGE = "Add \"refresh\" to force reload race data. "
@@ -222,7 +266,7 @@ def about(bot, msg):
 
 queryCommands = [racerStats, lookupRace]
 listCommands = [pastTimes, bestTime, worstTime]
-calculationCommands = [averageTime, medianTime, teamTime]
+calculationCommands = [averageTime, medianTime, teamTime, balance]
 metaCommands = [help, about]
 allCommands = queryCommands + listCommands + calculationCommands + metaCommands    
 
