@@ -114,27 +114,3 @@ class Racer:
         average = self.averageTime(maxTimes)
         return (average - timedelta(minutes = 20)) / 5
 
-
-
-
-
-"""
-usernames = open("usernames")
-usernames = ["mrbubbleskp"]
-for username in usernames:
-    username = username.strip()
-    print "running user " + username
-    bingoTimes = getPastBingoTimes(username)
-    validTimes = removeForfeits(bingoTimes)
-    forfeits = numForfeits(bingoTimes)
-    print "number valid bingos: " + str(len(validTimes))
-    print "number forfeits: " + str(forfeits)
-    print "average (recent 15): " + str(getAverageTime(validTimes[0:15]))
-    print "average (recent 10): " + str(getAverageTime(validTimes[0:10]))
-    print "average (recent 5): " + str(getAverageTime(validTimes[0:5]))
-    print "last 5 times: "
-    for time in validTimes[0:5]:
-        print str(time)
-    print ""
-"""
-
