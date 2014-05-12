@@ -1,4 +1,5 @@
 from datetime import timedelta
+from termcolor import colored
 
 # helper method for bot
 
@@ -187,14 +188,17 @@ def balance(bot, msg):
         optimalTeamTwo = [racer for racer in participants if racer not in optimalTeamOne]
         optimalRateDiff = abs(sumRates(optimalTeamOne) - sumRates(optimalTeamTwo))
         for x in range(1,6):
-            for y in range(x,6):
+            for y in range(x+1,6):
                 teamOne = [participants[0], participants[x], participants[y]]
                 teamTwo = [racer for racer in participants if racer not in teamOne]
                 rateDiff = abs(sumRates(teamOne) - sumRates(teamTwo))
                 if rateDiff < optimalRateDiff:
+                    print(colored("Best found: ", "yellow"))
                     optimalTeamOne = teamOne
                     optimalTeamTwo = teamTwo
                     optimalRateDiff = rateDiff
+                print(colored("Team One: " + ", ".join([name for (rate, name) in teamOne]), "yellow"))
+                print(colored("Team Two: " + ", ".join([name for (rate, name) in teamTwo]), "yellow"))
 
         teamOneNames = [name for (rate, name) in optimalTeamOne]
         teamOneTime = getTeamTime([rate for (rate, name) in optimalTeamOne])
