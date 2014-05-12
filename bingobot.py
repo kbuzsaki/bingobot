@@ -12,7 +12,7 @@ def isMessage(ircmsg):
     return "PRIVMSG" in ircmsg
 
 def hello(bot, msg):
-    if msg.contains("Hello " + bot.nick):
+    if msg.contains("Hello " + bot.nick) or msg.contains("Hi " + bot.nick):
         bot.sendmsg(msg.channel, "Hello, " + msg.sender + "!")
 
 class NameException(Exception):
