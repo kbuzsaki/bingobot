@@ -153,20 +153,70 @@ def teamTime(bot, msg):
         message += "\" would take about " + formatTime(blackoutTime) + " to complete a blackout."
         bot.sendmsg(msg.channel, message)
 
+NAME = "RacerName"
+RANGE_MESSAGE = "Optionally, you can specify a maximum number of races or range of races to use. "
+REFRESH_MESSAGE = "Add \"refresh\" to force reload race data. "
+DETAILED_MESSAGE = "Add \"detailed\" to get race dates and urls. "
+
 def help(bot, msg):
-    if msg.command == "!help":
-        message = "Commands: !racer, !results, !lookup, !best, !worst, !average, !median, !teamtime.\n"
-        message += "Format is \"!command <racer> [maxResults]\". "
-        message += "!lookup requires a time after the racer name as well.\n"
-        message += "Add \"detailed\" to the end of a list command to get dates and urls. "
-        message += "Add \"refresh\" to the end of any command to force reload race data."
-        message += "Note that players with a large race history may take a while to load "
-        message += "when they are first accessed. Race history is cached for subsequent commands."
-        bot.sendmsg(msg.channel, message)
+    if msg.command != "!help":
+        return
+    search = msg.elements[1] if len(msg.elements) > 1 else None
+
+    if search == None:
+        message = "Commands: !racer, !results, !best, !worst, !lookup, !average, "
+        message += "!median, !teamtime, !about.\n"
+        message += "Run !help <command> to get detailed help for a command."
+    elif "racer" in search:
+        message = "Looks up a racer's bingo history including total completed and forfeited. "
+        message += REFRESH_MESSAGE + "\n"
+        message += "Example: \"!racer " + NAME + "\""
+    elif "results" in search:
+        message = "Looks up a portion of a racer's bingo history. "
+        message += RANGE_MESSAGE + REFRESH_MESSAGE + DETAILED_MESSAGE + "\n"
+        message += "Examples: \"!results " + NAME + "\", \"!results " + NAME + " 15\""
+    elif "best" in search:
+        message = "Looks up a racer's fastest bingo results. "
+        message += RANGE_MESSAGE + REFRESH_MESSAGE + DETAILED_MESSAGE + "\n"
+        message += "Examples: \"!best " + NAME + "\", \"!best " + NAME + " 15\""
+    elif "worst" in search:
+        message = "Looks up a racer's slowest bingo results. "
+        message += RANGE_MESSAGE + REFRESH_MESSAGE + DETAILED_MESSAGE + "\n"
+        message += "Examples: \"!worst " + NAME + "\", \"!worst " + NAME + " 15\""
+    elif "lookup" in search:
+        message = "Finds all of a racer's results with a given time. "
+        message += REFRESH_MESSAGE + "\n"
+        message += "Examples: \"!lookup " + NAME + " 1:48:39\", \"!lookup " + NAME + " 5:49:51\""
+    elif "average" in search:
+        message = "Calculates the average time for a racer from their past N races. "
+        message += RANGE_MESSAGE + REFRESH_MESSAGE + "\n"
+        message += "Examples: \"!average " + NAME + "\", \"!average " + NAME + " 5\""
+    elif "median" in search:
+        message = "Calculates the median time for a racer from their past N races. "
+        message += RANGE_MESSAGE + REFRESH_MESSAGE + "\n"
+        message += "Examples: \"!median " + NAME + "\", \"!median " + NAME + " 5\""
+    elif "teamtime" in search:
+        message = "Calculates the expected time blackout bingo time for a team of players. "
+        message += "Uses each player's average from their past 15 bingo results. "
+        message += "Alternatively, you can supply exact times to use in the calculation. "
+        message += REFRESH_MESSAGE + "\n"
+        message += "Examples: \"!teamtime bradwickliffe1997 gombill saltor\", "
+        message += "\"!teamtime " + NAME + " 1:20:15 1:34:17\""
+    elif "help" in search:
+        message = "Displays a help message explaining how to use a command.\n"
+        message += "Examples: \"!help\", \"!help !results\""
+    elif "about" in search:
+        message = "Displays version information and the people who have contributed to this bot."
+    elif search == "me":
+        message = "Very funny, " + msg.sender + "."
+    else:
+        message = "No help information for " + msg.elements[1]
+
+    bot.sendmsg(msg.channel, message)
 
 def about(bot, msg):
     if msg.command == "!about":
-        message = "Version 0.3\n"
+        message = "Version 0.4\n"
         message += "Created by Saltor. !teamtime algorithm by Gombill."
         bot.sendmsg(msg.channel, message)
 
