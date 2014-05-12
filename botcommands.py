@@ -117,6 +117,7 @@ def completionRate(bot, msg):
         message += " or " + "{0:.2f}".format(goalsPer2Hours) + " goals in 2 hours."
         bot.sendmsg(msg.channel, message)
 
+
 # constants and helpers for teamTime()
 AVG_BLACKOUT = timedelta(hours=3, minutes=15)
 AVG_REGULAR = timedelta(hours=1, minutes=20)
@@ -126,6 +127,55 @@ AVG_OVERLAP = timedelta(minutes=5)
 def multDelta(delta, factor):
     seconds = delta.total_seconds() * factor
     return timedelta(seconds=seconds)
+
+def toEffectiveRate(averageTime, successRate):
+    netAverage = averageTime - AVG_BASE
+    return multDelta(netAverage, 1 / successRate)
+
+def mapToScore(workRate):
+    x = workRate * 10000
+    score = (-0.628391 * x**3) + (2.3329 * x**2) + (27.3814 * x) - 13.1937 
+    return score
+    
+# hidden command
+def effectiveRate(bot, msg):
+    if msg.command == "!rawrate":
+        if len(msg.times) > 0:
+            effectiveRate = toEffectiveRate(msg.times[0], successRate=1.0)
+            identifier = str(msg.times[0])
+        else:
+            racer = bot.getRacer(msg.channel, msg.username, msg.refresh)
+            times = racer.validTimes()[msg.minimum:msg.maximum]
+            averageTime = sum(times, timedelta()) / len(times)
+            successRate = max(racer.completionRate(), 0.5)
+            effectiveRate = toEffectiveRate(averageTime, successRate)
+            identifier = racer.username
+
+        workRate = 1 / effectiveRate.total_seconds()
+
+        message = "Raw work rate for " + identifier + ": " + str(workRate) 
+
+        bot.sendmsg(msg.channel, message)
+
+def effectiveScore(bot, msg):
+    if msg.command == "!score":
+        if len(msg.times) > 0:
+            effectiveRate = toEffectiveRate(msg.times[0], successRate=1.0)
+            identifier = str(msg.times[0])
+        else:
+            racer = bot.getRacer(msg.channel, msg.username, msg.refresh)
+            times = racer.validTimes()[msg.minimum:msg.maximum]
+            averageTime = sum(times, timedelta()) / len(times)
+            successRate = max(racer.completionRate(), 0.5)
+            effectiveRate = toEffectiveRate(averageTime, successRate)
+            identifier = racer.username
+
+        workRate = 1 / effectiveRate.total_seconds()
+        workScore = mapToScore(workRate)
+
+        message = "Adjusted score for " + identifier + ": " + str(int(workScore)) 
+
+        bot.sendmsg(msg.channel, message)
 
 def teamTime(bot, msg):
     if msg.command == "!teamtime":
@@ -165,7 +215,7 @@ def help(bot, msg):
 
     if search == None:
         message = "Commands: !racer, !results, !best, !worst, !lookup, !average, "
-        message += "!median, !teamtime, !about.\n"
+        message += "!median, !teamtime, !score, !help, !about.\n"
         message += "Run !help <command> to get detailed help for a command."
     elif "racer" in search:
         message = "Looks up a racer's bingo history including total completed and forfeited. "
@@ -202,6 +252,13 @@ def help(bot, msg):
         message += REFRESH_MESSAGE + "\n"
         message += "Examples: \"!teamtime bradwickliffe1997 gombill saltor\", "
         message += "\"!teamtime " + NAME + " 1:20:15 1:34:17\""
+    elif "score" in search:
+        message = "Calculates a rough \"bingo effectiveness\" score based on a racer's previous"
+        message += "times. 100 corresponds to an effective average of 1:07:00, while "
+        message += "1 corresponds to around 6:00:00. "
+        message += "Alternatively, you can supply an exact time to use in the calculation. "
+        message += REFRESH_MESSAGE + "\n"
+        message += "Examples: \"!score " + NAME + "\", \"!score 1:20\""
     elif "help" in search:
         message = "Displays a help message explaining how to use a command.\n"
         message += "Examples: \"!help\", \"!help !results\""
@@ -222,7 +279,7 @@ def about(bot, msg):
 
 queryCommands = [racerStats, lookupRace]
 listCommands = [pastTimes, bestTime, worstTime]
-calculationCommands = [averageTime, medianTime, teamTime]
+calculationCommands = [averageTime, medianTime, effectiveRate, effectiveScore, teamTime]
 metaCommands = [help, about]
 allCommands = queryCommands + listCommands + calculationCommands + metaCommands    
 
