@@ -127,27 +127,35 @@ def multDelta(delta, factor):
     seconds = delta.total_seconds() * factor
     return timedelta(seconds=seconds)
 
+def getTeamWorkRates(times):
+    netAverages = [time - AVG_BASE for time in times]
+    successRates = [max(racer.completionRate(), 0.5) for racer in racers] + [1.0] * len(msg.times)
+    tuples = list(zip(netAverages, successRates))
+    effectiveRates = [multDelta(delta, 1 / successrate) for (delta, successrate) in tuples]
+
+    # calculates the combined "work rate" or contribution rate of the team
+    workRates = [1 / rate.total_seconds() for rate in effectiveRates]
+    return workRates
+
+def getTeamTime(workRates):
+    combinedWorkRate = sum(workRates)
+    # work rate is then used to calculate net average time for a normal bingo
+    combinedRate = timedelta(seconds=(1 / combinedWorkRate))
+
+    # the team's net average time is then scaled up to blackout scale
+    ratio = (AVG_BLACKOUT - AVG_BASE).total_seconds() / (AVG_REGULAR - AVG_BASE).total_seconds() 
+    # the base 30 minutes are added back to convert the net time to total time
+    blackoutTime = multDelta(combinedRate, ratio) + AVG_BASE + AVG_OVERLAP
+    
+    return blackoutTime
+
 def teamTime(bot, msg):
     if msg.command == "!teamtime":
         racers = [bot.getRacer(msg.channel, username, msg.refresh) for username in msg.usernames]
 
         # calcualtes the effective goal completion rate of each racer
         times = [racer.averageTime(15) for racer in racers] + msg.times
-        netAverages = [time - AVG_BASE for time in times]
-        successRates = [max(racer.completionRate(), 0.5) for racer in racers] + [1.0] * len(msg.times)
-        tuples = list(zip(netAverages, successRates))
-        effectiveRates = [multDelta(delta, 1 / successrate) for (delta, successrate) in tuples]
-
-        # calculates the combined "work rate" or contribution rate of the team
-        workRates = [1 / rate.total_seconds() for rate in effectiveRates]
-        combinedWorkRate = sum(workRates)
-        # work rate is then used to calculate net average time for a normal bingo
-        combinedRate = timedelta(seconds=(1 / combinedWorkRate))
-
-        # the team's net average time is then scaled up to blackout scale
-        ratio = (AVG_BLACKOUT - AVG_BASE).total_seconds() / (AVG_REGULAR - AVG_BASE).total_seconds() 
-        # the base 30 minutes are added back to convert the net time to total time
-        blackoutTime = multDelta(combinedRate, ratio) + AVG_BASE + AVG_OVERLAP
+        blackoutTime = getTeamTime(getTeamWorkRates(times))
         
         message = "Team \"" + ", ".join(msg.usernames + [str(time) for time in msg.times]) 
         message += "\" would take about " + formatTime(blackoutTime) + " to complete a blackout."
