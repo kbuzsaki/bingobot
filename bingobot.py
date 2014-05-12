@@ -18,7 +18,7 @@ def hello(bot, msg):
 class NameException(Exception):
     pass
 
-wordPattern = re.compile("^[a-zA-z_]+$")
+wordPattern = re.compile("^[a-zA-Z_][a-zA-Z_0-9]+$")
 numberPattern = re.compile("^\d+$")
 timePattern = re.compile("^\d?\d:\d\d(:\d\d)?$")
 
