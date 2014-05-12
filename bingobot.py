@@ -159,6 +159,7 @@ class BingoBot:
                 self.joinchan(self.channel)
 
     def getRacer(self, channel, username, refresh=False):
+        username = username.lower()
         if (refresh or username not in self.racers):
             try:
                 self.sendmsg(channel, "Loading data for " + username + "...")
