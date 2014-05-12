@@ -184,13 +184,27 @@ def balance(bot, msg):
         def sumRates(participants):
             return sum([rate for (rate, name) in participants])
 
+        # this feels really gross and unpythonic
+        # I don't know a better way to check for identity though
+        # you have to check for identity so duplicate times aren't omitted
+        def complementTeam(teamOne, participants):
+            teamTwo = []
+            for racer in participants:
+                used = False
+                for member in teamOne:
+                    if racer is member:
+                        used = True
+                if not used:
+                    teamTwo.append(racer)
+            return teamTwo
+
         optimalTeamOne = [participants[0], participants[1], participants[2]]
-        optimalTeamTwo = [racer for racer in participants if racer not in optimalTeamOne]
+        optimalTeamTwo = complementTeam(optimalTeamOne, participants)
         optimalRateDiff = abs(sumRates(optimalTeamOne) - sumRates(optimalTeamTwo))
         for x in range(1,6):
             for y in range(x+1,6):
                 teamOne = [participants[0], participants[x], participants[y]]
-                teamTwo = [racer for racer in participants if racer not in teamOne]
+                teamTwo = complementTeam(teamOne, participants)
                 rateDiff = abs(sumRates(teamOne) - sumRates(teamTwo))
                 if rateDiff < optimalRateDiff:
                     print(colored("Best found: ", "yellow"))
