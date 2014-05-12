@@ -7,4 +7,5 @@ Todo List:
     - "detailed" mode readability improvements? include comment?
     - make !lookup work for wildcards, e.g. 1:33:xx or 1:33:**
     - team balancer
+    - add error messages to individual commands
 
