@@ -70,7 +70,7 @@ def medianTime(bot, msg):
         racer = bot.getRacer(msg.channel, msg.username, msg.refresh)
 
         relevantTimes = racer.validTimes()[msg.minimum:msg.maximum]
-        medianTime = relevantTimes[len(relevantTimes) // 2]
+        medianTime = sorted(relevantTimes)[len(relevantTimes) // 2]
 
         message = "Median time from " + msg.username + "'s last " 
         message += str(len(relevantTimes)) + " bingos: " + formatTime(medianTime)
