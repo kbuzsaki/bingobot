@@ -115,13 +115,13 @@ class BingoBot:
         self.server = server
         self.channel = channel
         self.commands = [hello] + commands
-        self.ircsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.racers = dict()
 
     def send(self, s):
         self.ircsock.send(s.encode())
 
     def connect(self):
+        self.ircsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.ircsock.connect((self.server, 6667))
         self.send("USER " + self.nick + " " + self.nick + " " + self.nick + " :BingoBot yo\n")
         self.send("NICK " + self.nick + "\n")
@@ -172,7 +172,8 @@ class BingoBot:
                 print(colored(ircmsg, "green"))
             # else, must be disconnected
             else:
-                pass
+                print(colored("Disconnected from server?", "yellow"))
+                return
             # weird hack thing for joining channels?
             if "End of /MOTD" in ircmsg:
                 self.joinchan(self.channel)

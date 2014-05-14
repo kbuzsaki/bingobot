@@ -6,7 +6,10 @@ channel = "#bingoleague"
 botnick = "BingoBot"
 
 bingoBot = BingoBot(botnick, server, channel, commands = allCommands)
-bingoBot.connect()
-bingoBot.listen()
+
+# infinite loop tries to reconnect if disconnected by timeout
+while True:
+    bingoBot.connect()
+    bingoBot.listen()
     
 
