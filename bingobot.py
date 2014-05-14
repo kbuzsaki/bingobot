@@ -11,11 +11,18 @@ def isPing(ircmsg):
 def isMessage(ircmsg):
     return "PRIVMSG" in ircmsg
 
+# users who can kill the bingobot using !kill
+# this is devs, ops, and voices on #bingoleague
+PRIVELAGED_USERS = ["saltor", "saltor_", "gombill", "keymakr", "exodus", "balatee"]
+
 def hello(bot, msg):
     if msg.contains("Hello " + bot.nick) or msg.contains("Hi " + bot.nick):
         bot.sendmsg(msg.channel, "Hello, " + msg.sender + "!")
 
 class NameException(Exception):
+    pass
+
+class KillException(Exception):
     pass
 
 wordPattern = re.compile("^[a-zA-Z_][a-zA-Z_0-9]+$")
@@ -140,20 +147,32 @@ class BingoBot:
             elif isMessage(ircmsg):
                 print(ircmsg)
                 msg = Message(ircmsg)
-                for command in self.commands:
-                    try:
-                        command(self, msg)
-                    except NameException as e:
-                        print(colored(traceback.format_exc(), "red"))
-                        message = "There was a problem looking up data for " + str(e) + ". "
-                        message += "Do they have an SRL profile?"
-                        self.sendmsg(msg.channel, message)
-                    except Exception as e:
-                        print(colored(traceback.format_exc(), "red"))
-                        self.sendmsg(msg.channel, "Something weird happened...")
-            # all other messages are green
-            else:
+                # kill command to force disconnect the bot from the server
+                # WARNING: the bot will not reconnect until manually reset
+                if msg.command == "!kill" :
+                    print(colored("Kill request detected from " + msg.sender.lower(), "yellow"))
+                    if msg.sender.lower() in PRIVELAGED_USERS:
+                        # actually kills the bot if the sender is privelaged
+                        self.send("QUIT Kill requested by " + msg.sender + "\n")
+                        raise KillException
+                else:
+                    for command in self.commands:
+                        try:
+                            command(self, msg)
+                        except NameException as e:
+                            print(colored(traceback.format_exc(), "red"))
+                            message = "There was a problem looking up data for " + str(e) + ". "
+                            message += "Do they have an SRL profile?"
+                            self.sendmsg(msg.channel, message)
+                        except Exception as e:
+                            print(colored(traceback.format_exc(), "red"))
+                            self.sendmsg(msg.channel, "Something weird happened...")
+            # if there's SOMETHING there
+            elif len(ircmsg) > 0:
                 print(colored(ircmsg, "green"))
+            # else, must be disconnected
+            else:
+                pass
             # weird hack thing for joining channels?
             if "End of /MOTD" in ircmsg:
                 self.joinchan(self.channel)
@@ -167,4 +186,5 @@ class BingoBot:
             except:
                 raise NameException(username)
         return self.racers[username]
+
 
