@@ -155,7 +155,7 @@ class BingoBot:
             else:
                 print(colored(ircmsg, "green"))
             # weird hack thing for joining channels?
-            if ircmsg.find("End of /MOTD"):
+            if "End of /MOTD" in ircmsg:
                 self.joinchan(self.channel)
 
     def getRacer(self, channel, username, refresh=False):
