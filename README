@@ -1,10 +1,6 @@
 This is an IRC bot for the ZeldaSpeedRuns BingoLeague to be hosted on SpeedRunsLive.
 
-Todo List:
-    - beforeDate and afterDate parameters
-    - Have messages over the message limit be sent in multiple chunks
-    - "detailed" mode readability improvements? include comment?
-    - make !lookup work for wildcards, e.g. 1:33:xx or 1:33:**
-    - add error messages to individual commands
-    - more advanced team balancer
+Feature requests should be directed to the github issues page here: https://github.com/kbuzsaki/bingobot/issues?state=open
+
+Contact saltor on irc.speedrunslive.com #zelda or #bingoleague
 
