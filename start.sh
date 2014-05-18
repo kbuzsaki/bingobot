@@ -17,7 +17,7 @@ then
     then
         # kills the process and all children
         pid=`cat .pid.temp`
-        kill -- -$pid
+        kill -- $pid
         rm .pid.temp
     else
         echo "No PID file detected!"
