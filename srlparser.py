@@ -110,7 +110,3 @@ class Racer:
 
         return sum(times, timedelta()) / len(times)
 
-    def averageRate(self, maxTimes=-1):
-        average = self.averageTime(maxTimes)
-        return (average - timedelta(minutes = 20)) / 5
-

@@ -102,22 +102,6 @@ def worstTime(bot, msg):
 
         bot.sendmsg(msg.channel, message)
 
-# broken, disabled
-def completionRate(bot, msg):
-    if msg.command == "!rate":
-        racer = bot.getRacer(msg.channel, msg.username, msg.refresh)
-        if len(msg.arguments) > 1 and msg.arguments[1].isdigit():
-            maxResults = int(msg.arguments[1])
-        else:
-            maxResults = 10
-
-        rate = racer.averageRate(maxResults)
-        goalsPer2Hours = timedelta(hours=2).total_seconds() / rate.total_seconds()
-        
-        message = "Average rate for " + username + ": " + formatTime(rate) + " per goal, "
-        message += " or " + "{0:.2f}".format(goalsPer2Hours) + " goals in 2 hours."
-        bot.sendmsg(msg.channel, message)
-
 # constants and helpers for teamTime()
 AVG_BLACKOUT = timedelta(hours=3, minutes=15)
 AVG_REGULAR = timedelta(hours=1, minutes=20)
