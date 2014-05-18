@@ -182,12 +182,9 @@ def about(bot, msg):
         message += "Created by Saltor. !teamtime algorithm by Gombill."
         bot.sendmsg(msg.channel, message)
 
-# includes !teamtime and !balance
-import teamcommands
-
 queryCommands = [racerStats, lookupRace]
 listCommands = [pastTimes, bestTime, worstTime]
 calculationCommands = [averageTime, medianTime]
 metaCommands = [help, about]
-allCommands = queryCommands + listCommands + calculationCommands + teamcommands.commands + metaCommands    
+allCommands = queryCommands + listCommands + calculationCommands + metaCommands    
 

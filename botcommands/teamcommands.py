@@ -1,6 +1,6 @@
 from datetime import timedelta
 from termcolor import colored
-from botcommands import formatTime
+from botcommands.basiccommands import formatTime
                         
 # constants and helpers for teamTime()
 AVG_BLACKOUT = timedelta(hours=3, minutes=15)
@@ -107,5 +107,5 @@ def balance(bot, msg):
         message += "Team two: \"" + ", ".join(teamTwoNames) + "\" (" + formatTime(teamTwoTime) + ")"
         bot.sendmsg(msg.channel, message)
 
-commands = [teamTime, balance]
+allCommands = [teamTime, balance]
                                                

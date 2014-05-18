@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from bingobot import BingoBot
-from botcommands import allCommands
+from botcommands.commands import allCommands
 
 TWO_MINUTES = timedelta(minutes=2)
 
