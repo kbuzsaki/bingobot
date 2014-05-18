@@ -137,7 +137,7 @@ def teamTime(bot, msg):
         racers = [bot.getRacer(msg.channel, username, msg.refresh) for username in msg.usernames]
 
         # calcualtes the effective goal completion rate of each racer
-        times = [racer.averageTime(0, 15) for racer in racers] + msg.times
+        times = [racer.medianTime(0, 15) for racer in racers] + msg.times
         successRates = [max(racer.completionRate(), 0.5) for racer in racers] + [1.0] * len(msg.times)
         blackoutTime = getTeamTime(getTeamWorkRates(times, successRates))
         
@@ -150,7 +150,7 @@ def balance(bot, msg):
         racers = [bot.getRacer(msg.channel, username, msg.refresh) for username in msg.usernames]
 
         # calcualtes the effective goal completion rate of each racer
-        stats = [(racer.averageTime(0, 15), racer.completionRate(), racer.username) for racer in racers]
+        stats = [(racer.medianTime(0, 15), racer.completionRate(), racer.username) for racer in racers]
         adjustedStats = [(time - AVG_BASE, successRate, name) for (time, successRate, name) in stats]
         participants = [(multDelta(time, 1 / rate), name) for (time, rate, name) in adjustedStats] 
         participants += [(time - AVG_BASE, str(time)) for time in msg.times]
