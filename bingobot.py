@@ -11,11 +11,33 @@ def isPing(ircmsg):
 
 # users who can kill the bingobot using !kill
 # this is devs, ops, and voices on #bingoleague
-PRIVELAGED_USERS = ["saltor", "saltor_", "gombill", "keymakr", "exodus", "balatee"]
+ADMINS = ["saltor", "saltor_"]
+PRIVELAGED_USERS = ADMINS + ["gombill", "keymakr", "exodus", "balatee"]
+
+channelPattern = re.compile("^#.+$")
 
 def hello(bot, msg):
     if msg.contains("Hello " + bot.nick) or msg.contains("Hi " + bot.nick):
         bot.sendmsg(msg.channel, "Hello, " + msg.sender + "!")
+
+# built in commands
+
+def say(bot, msg):
+    if msg.command == "!say":
+        if msg.sender.lower() in ADMINS:
+            if channelPattern.match(msg.arguments[0]):
+                bot.sendmsg(msg.arguments[0], " ".join(msg.arguments[1:]))
+            else:
+                bot.sendmsg(msg.channel, " ".join(msg.arguments))
+
+def command(bot, msg):
+    if msg.command == "!command":
+        if msg.sender.lower() in ADMINS:
+            bot.send(" ".join(msg.arguments) + "\n")
+    
+builtinCommands = [hello, say, command]
+
+# end built in commands
 
 class NameException(Exception):
     pass
@@ -29,7 +51,7 @@ class BingoBot:
         self.nick = nick
         self.server = server
         self.channel = channel
-        self.commands = [hello] + commands
+        self.commands = builtinCommands + commands
         self.racers = dict()
 
     def send(self, s):
