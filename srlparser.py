@@ -102,11 +102,14 @@ class Racer:
     def completionRate(self):
         return len(self.validResults()) / float(len(self.results))
 
-    def averageTime(self, maxTimes=-1):
-        if maxTimes > 0 and maxTimes < len(self.validTimes()):
-            times = self.validTimes()[:maxTimes]
-        else:
-            times = self.validTimes()
+    def averageTime(self, minTimes, maxTimes):
+        times = self.validTimes()[minTimes:maxTimes]
 
         return sum(times, timedelta()) / len(times)
+
+    def medianTime(self, minTimes, maxTimes):
+        times = self.validTimes()[minTimes:maxTimes]
+
+        return sorted(times)[len(times) // 2]
+
 

@@ -57,8 +57,7 @@ def averageTime(bot, msg):
     if msg.command == "!average":
         racer = bot.getRacer(msg.channel, msg.username, msg.refresh)
 
-        times = racer.validTimes()[msg.minimum:msg.maximum]
-        averageTime = sum(times, timedelta()) / len(times)
+        averageTime = racer.averageTime(msg.minimum, msg.maximum)
         resultsUsed = min(msg.maximum - msg.minimum, len(racer.validResults()))
 
         message = "Average time from " + msg.username + "'s last " + str(resultsUsed)
@@ -69,11 +68,11 @@ def medianTime(bot, msg):
     if msg.command == "!median":
         racer = bot.getRacer(msg.channel, msg.username, msg.refresh)
 
-        relevantTimes = racer.validTimes()[msg.minimum:msg.maximum]
-        medianTime = sorted(relevantTimes)[len(relevantTimes) // 2]
+        medianTime = racer.medianTime(msg.minimum, msg.maximum)
+        resultsUsed = min(msg.maximum - msg.minimum, len(racer.validResults()))
 
         message = "Median time from " + msg.username + "'s last " 
-        message += str(len(relevantTimes)) + " bingos: " + formatTime(medianTime)
+        message += str(resultsUsed) + " bingos: " + formatTime(medianTime)
         bot.sendmsg(msg.channel, message)
 
 def bestTime(bot, msg):
@@ -138,7 +137,7 @@ def teamTime(bot, msg):
         racers = [bot.getRacer(msg.channel, username, msg.refresh) for username in msg.usernames]
 
         # calcualtes the effective goal completion rate of each racer
-        times = [racer.averageTime(15) for racer in racers] + msg.times
+        times = [racer.averageTime(0, 15) for racer in racers] + msg.times
         successRates = [max(racer.completionRate(), 0.5) for racer in racers] + [1.0] * len(msg.times)
         blackoutTime = getTeamTime(getTeamWorkRates(times, successRates))
         
@@ -151,7 +150,7 @@ def balance(bot, msg):
         racers = [bot.getRacer(msg.channel, username, msg.refresh) for username in msg.usernames]
 
         # calcualtes the effective goal completion rate of each racer
-        stats = [(racer.averageTime(15), racer.completionRate(), racer.username) for racer in racers]
+        stats = [(racer.averageTime(0, 15), racer.completionRate(), racer.username) for racer in racers]
         adjustedStats = [(time - AVG_BASE, successRate, name) for (time, successRate, name) in stats]
         participants = [(multDelta(time, 1 / rate), name) for (time, rate, name) in adjustedStats] 
         participants += [(time - AVG_BASE, str(time)) for time in msg.times]
