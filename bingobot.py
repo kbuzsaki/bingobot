@@ -51,7 +51,7 @@ def leave(bot, msg):
             bot.sendmsg(msg.channel, "Leaving " + msg.channel + "...")
             bot.leavechan(msg.channel)
         else:
-            message = "Error, cannot !leave #bingoleague. Ask an op or voice to /kick or !kill"
+            message = "Error, cannot !leave #bingoleague. Ask an op or voice to /kick or !kill."
             bot.sendmsg(msg.channel, message)
     
 builtinCommands = [hello, say, command, join, leave]

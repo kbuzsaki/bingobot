@@ -218,7 +218,7 @@ def help(bot, msg):
 
     if search == None:
         message = "Commands: !racer, !results, !best, !worst, !lookup, !average, "
-        message += "!median, !teamtime, !balance, !about.\n"
+        message += "!median, !teamtime, !balance, !join, !leave, !about.\n"
         message += "Run !help <command> to get detailed help for a command."
     elif "racer" in search:
         message = "Looks up a racer's bingo history including total completed and forfeited. "
@@ -264,6 +264,14 @@ def help(bot, msg):
     elif "help" in search:
         message = "Displays a help message explaining how to use a command.\n"
         message += "Examples: \"!help\", \"!help !results\""
+    elif "join" in search:
+        message = "Makes BingoBot join a particular channel. Use this if you want to use BingoBot "
+        message += "to set up a race so you don't spam #bingoleage.\n"
+        message += "Example: \"!join #srl-abcde\"."
+    elif "leave" in search:
+        message = "Makes BingoBot leave the channel. Use it in the channel that you want BingoBot "
+        message += "to leave.\n"
+        message += "Example: \"!leave\"."
     elif "about" in search:
         message = "Displays version information and the people who have contributed to this bot."
     elif search == "me":
