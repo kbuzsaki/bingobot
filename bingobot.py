@@ -34,8 +34,27 @@ def command(bot, msg):
     if msg.command == "!command":
         if msg.sender.lower() in ADMINS:
             bot.send(" ".join(msg.arguments) + "\n")
+             
+def join(bot, msg):
+    if msg.command == "!join":
+        for argument in msg.arguments:
+            if channelPattern.match(argument):
+                bot.sendmsg(msg.channel, "Joining " + argument + "...")
+                bot.joinchan(argument)
+            else:
+                bot.sendmsg(msg.channel, "Is \"" + argument + "\" a channel?") 
+        
+
+def leave(bot, msg):
+    if msg.command == "!leave":
+        if msg.channel != "#bingoleague":
+            bot.sendmsg(msg.channel, "Leaving " + msg.channel + "...")
+            bot.leavechan(msg.channel)
+        else:
+            message = "Error, cannot !leave #bingoleague. Ask an op or voice to /kick or !kill"
+            bot.sendmsg(msg.channel, message)
     
-builtinCommands = [hello, say, command]
+builtinCommands = [hello, say, command, join, leave]
 
 # end built in commands
 
@@ -69,6 +88,9 @@ class BingoBot:
 
     def joinchan(self, chan):
         self.send("JOIN " + chan + "\n")
+
+    def leavechan(self, chan):
+        self.send("PART " + chan + "\n")
 
     def listen(self):
         while True:
