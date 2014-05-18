@@ -52,13 +52,18 @@ class Message:
     @property
     def elements(self):
         return self.text.split(" ")
+
     @property
     def command(self):
         return self.elements[0]
 
     @property
+    def arguments(self):
+        return self.elements[1:]
+
+    @property
     def words(self):
-        return [element for element in self.elements if wordPattern.match(element)]
+        return [argument for argument in self.arguments if wordPattern.match(argument)]
 
     @property
     def usernames(self):
@@ -78,7 +83,7 @@ class Message:
 
     @property
     def numbers(self):
-        return [int(element) for element in self.elements if numberPattern.match(element)]
+        return [int(argument) for argument in self.arguments if numberPattern.match(argument)]
 
     @property
     def minimum(self):
@@ -98,15 +103,15 @@ class Message:
 
     @property
     def times(self):
-        return [parseTime(el) for el in self.elements if timePattern.match(el)]
+        return [parseTime(arg) for arg in self.arguments if timePattern.match(arg)]
 
     @property
     def refresh(self):
-        return "refresh" in self.elements
+        return "refresh" in self.arguments
 
     @property
     def detailed(self):
-        return "detailed" in self.elements
+        return "detailed" in self.arguments
 
 
 class BingoBot:

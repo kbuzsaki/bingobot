@@ -106,8 +106,8 @@ def worstTime(bot, msg):
 def completionRate(bot, msg):
     if msg.command == "!rate":
         racer = bot.getRacer(msg.channel, msg.username, msg.refresh)
-        if len(msg.elements) > 2 and msg.elements[2].isdigit():
-            maxResults = int(msg.elements[2])
+        if len(msg.arguments) > 1 and msg.arguments[1].isdigit():
+            maxResults = int(msg.arguments[1])
         else:
             maxResults = 10
 
@@ -231,7 +231,7 @@ DETAILED_MESSAGE = "Add \"detailed\" to get race dates and urls. "
 def help(bot, msg):
     if msg.command != "!help":
         return
-    search = msg.elements[1] if len(msg.elements) > 1 else None
+    search = msg.arguments[0] if len(msg.arguments) > 0 else None
 
     if search == None:
         message = "Commands: !racer, !results, !best, !worst, !lookup, !average, "
@@ -286,7 +286,7 @@ def help(bot, msg):
     elif search == "me":
         message = "Very funny, " + msg.sender + "."
     else:
-        message = "No help information for " + msg.elements[1]
+        message = "No help information for " + msg.arguments[0]
 
     bot.sendmsg(msg.channel, message)
 
