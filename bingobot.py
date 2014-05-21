@@ -105,30 +105,7 @@ class BingoBot:
             # chat messages are grey
             elif isMessage(ircmsg):
                 print(ircmsg)
-                msg = Message(ircmsg)
-                # ignore anything from #speedrunslive to avoid flooding it accidentally
-                if msg.channel == "#speedrunslive":
-                    pass
-                # kill command to force disconnect the bot from the server
-                # WARNING: the bot will not reconnect until manually reset
-                elif msg.command == "!kill" :
-                    print(colored("Kill request detected from " + msg.sender.lower(), "yellow"))
-                    if msg.sender.lower() in PRIVELAGED_USERS:
-                        # actually kills the bot if the sender is privelaged
-                        self.send("QUIT Kill requested by " + msg.sender + "\n")
-                        raise KillException
-                else:
-                    for command in self.commands:
-                        try:
-                            command(self, msg)
-                        except NameException as e:
-                            print(colored(traceback.format_exc(), "red"))
-                            message = "There was a problem looking up data for " + str(e) + ". "
-                            message += "Do they have an SRL profile?"
-                            self.sendmsg(msg.channel, message)
-                        except Exception as e:
-                            print(colored(traceback.format_exc(), "red"))
-                            self.sendmsg(msg.channel, "Something weird happened...")
+                self.processMessage(ircmsg)
             # if there's SOMETHING there
             elif len(ircmsg) > 0:
                 print(colored(ircmsg, "green"))
@@ -140,6 +117,32 @@ class BingoBot:
             if "End of /MOTD" in ircmsg:
                 for channel in self.channels:
                     self.joinchan(channel)
+
+    def processMessage(self, ircmsg):
+        msg = Message(ircmsg)
+        # ignore anything from #speedrunslive to avoid flooding it accidentally
+        if msg.channel == "#speedrunslive":
+            pass
+        # kill command to force disconnect the bot from the server
+        # WARNING: the bot will not reconnect until manually reset
+        elif msg.command == "!kill" :
+            print(colored("Kill request detected from " + msg.sender.lower(), "yellow"))
+            if msg.sender.lower() in PRIVELAGED_USERS:
+                # actually kills the bot if the sender is privelaged
+                self.send("QUIT Kill requested by " + msg.sender + "\n")
+                raise KillException
+        else:
+            for command in self.commands:
+                try:
+                    command(self, msg)
+                except NameException as e:
+                    print(colored(traceback.format_exc(), "red"))
+                    message = "There was a problem looking up data for " + str(e) + ". "
+                    message += "Do they have an SRL profile?"
+                    self.sendmsg(msg.channel, message)
+                except Exception as e:
+                    print(colored(traceback.format_exc(), "red"))
+                    self.sendmsg(msg.channel, "Something weird happened...")
 
     def getRacer(self, channel, username, refresh=False):
         username = username.lower()
