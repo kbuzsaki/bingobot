@@ -74,7 +74,7 @@ class BingoBot:
         self.racers = dict()
 
     def send(self, s):
-        self.ircsock.send(s.encode())
+        self.ircsock.send(s.encode("latin-1"))
 
     def connect(self):
         self.ircsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -95,7 +95,7 @@ class BingoBot:
     def listen(self):
         while True:
             ircmsg = self.ircsock.recv(2048)
-            ircmsg = ircmsg.decode().strip()
+            ircmsg = ircmsg.decode("latin-1").strip()
             # pings are blue
             if isPing(ircmsg):
                 print(colored(ircmsg, "blue"))
