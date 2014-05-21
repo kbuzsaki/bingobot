@@ -106,9 +106,12 @@ class BingoBot:
             elif isMessage(ircmsg):
                 print(ircmsg)
                 msg = Message(ircmsg)
+                # ignore anything from #speedrunslive to avoid flooding it accidentally
+                if msg.channel == "#speedrunslive":
+                    pass
                 # kill command to force disconnect the bot from the server
                 # WARNING: the bot will not reconnect until manually reset
-                if msg.command == "!kill" :
+                elif msg.command == "!kill" :
                     print(colored("Kill request detected from " + msg.sender.lower(), "yellow"))
                     if msg.sender.lower() in PRIVELAGED_USERS:
                         # actually kills the bot if the sender is privelaged
