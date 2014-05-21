@@ -66,8 +66,9 @@ class KillException(Exception):
 
 
 class BingoBot:
-    def __init__(self, nick, server, channels, commands=[]):
+    def __init__(self, nick, password, server, channels=[], commands=[]):
         self.nick = nick
+        self.password = password
         self.server = server
         self.channels = channels
         self.commands = builtinCommands + commands
@@ -117,6 +118,9 @@ class BingoBot:
             if "End of /MOTD" in ircmsg:
                 for channel in self.channels:
                     self.joinchan(channel)
+            # weird hack thing for nickserv identify
+            if "NickServ" in ircmsg and "/msg NickServ IDENTIFY" in ircmsg:
+                self.sendmsg("NickServ", "IDENTIFY " + self.password)
 
     def processMessage(self, ircmsg):
         msg = Message(ircmsg)
