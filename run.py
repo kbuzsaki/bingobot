@@ -5,10 +5,10 @@ from botcommands import allCommands
 TWO_MINUTES = timedelta(minutes=2)
 
 server = "irc2.speedrunslive.com"
-channel = "#bingoleague"
+channels = ["#bingoleague", "#speedrunslive"]
 botnick = "BingoBot"
 
-bingoBot = BingoBot(botnick, server, channel, commands = allCommands)
+bingoBot = BingoBot(botnick, server, channels, commands = allCommands)
 
 lastConnection = datetime(year=1999, month=1, day=1)
 

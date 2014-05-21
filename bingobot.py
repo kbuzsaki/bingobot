@@ -66,10 +66,10 @@ class KillException(Exception):
 
 
 class BingoBot:
-    def __init__(self, nick, server, channel, commands=[]):
+    def __init__(self, nick, server, channels, commands=[]):
         self.nick = nick
         self.server = server
-        self.channel = channel
+        self.channels = channels
         self.commands = builtinCommands + commands
         self.racers = dict()
 
@@ -135,7 +135,8 @@ class BingoBot:
                 return
             # weird hack thing for joining channels?
             if "End of /MOTD" in ircmsg:
-                self.joinchan(self.channel)
+                for channel in self.channels:
+                    self.joinchan(channel)
 
     def getRacer(self, channel, username, refresh=False):
         username = username.lower()
