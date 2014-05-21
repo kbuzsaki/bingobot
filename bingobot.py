@@ -75,6 +75,7 @@ class BingoBot:
         self.racers = dict()
 
     def send(self, s):
+        print(colored("OUTGOING: " + s.strip(), "magenta"))
         self.ircsock.send(s.encode("latin-1"))
 
     def connect(self):
@@ -102,7 +103,6 @@ class BingoBot:
                 print(colored(ircmsg, "blue"))
                 pingmsg = ircmsg.split("PING :")[1]
                 self.send("PONG :" + pingmsg + "\n")
-                print(colored("RESPONDING TO PING ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~", "blue"))
             # chat messages are grey
             elif isMessage(ircmsg):
                 print(ircmsg)
@@ -114,6 +114,7 @@ class BingoBot:
             else:
                 print(colored("Disconnected from server?", "yellow"))
                 return
+
             # weird hack thing for joining channels?
             if "End of /MOTD" in ircmsg:
                 for channel in self.channels:
