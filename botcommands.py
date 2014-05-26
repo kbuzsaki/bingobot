@@ -75,6 +75,18 @@ def medianTime(bot, msg):
         message += str(resultsUsed) + " bingos: " + formatTime(medianTime)
         bot.sendmsg(msg.channel, message)
 
+def rankPlayers(bot, msg):
+    if msg.command == "!rank":
+        racers = [bot.getRacer(msg.channel, username, msg.refresh) for username in msg.usernames]
+        stats = [(racer.medianTime(0, 15), racer.username) for racer in racers]
+        stats = sorted(stats)
+
+        message = "Player rankings: \n"
+        for i in range(len(stats)):
+            message += str(i + 1) + ". " + stats[i][1] + " (" + str(stats[i][0]) + ")\n"
+
+        bot.sendmsg(msg.channel, message)
+
 def bestTime(bot, msg):
     if msg.command == "!best":
         racer = bot.getRacer(msg.channel, msg.username, msg.refresh)
@@ -288,7 +300,7 @@ def about(bot, msg):
         bot.sendmsg(msg.channel, message)
 
 queryCommands = [racerStats, lookupRace]
-listCommands = [pastTimes, bestTime, worstTime]
+listCommands = [pastTimes, rankPlayers, bestTime, worstTime]
 calculationCommands = [averageTime, medianTime, teamTime, balance]
 metaCommands = [help, about]
 allCommands = queryCommands + listCommands + calculationCommands + metaCommands    
