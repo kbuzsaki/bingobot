@@ -223,12 +223,16 @@ RANGE_MESSAGE = "Optionally, you can specify a maximum number of races or range 
 REFRESH_MESSAGE = "Add \"refresh\" to force reload race data. "
 DETAILED_MESSAGE = "Add \"detailed\" to get race dates and urls. "
 
+def bingoBotPls(text):
+    text = text.lower()
+    return "bingobot pls" in text or "bingobot plz" in text or "bingobot please" in text
+
 def help(bot, msg):
-    if msg.command != "!help":
+    if msg.command != "!help" and not bingoBotPls(msg.text):
         return
     search = msg.arguments[0] if len(msg.arguments) > 0 else None
 
-    if search == None:
+    if search == None or bingoBotPls(msg.text):
         message = "Commands: !racer, !results, !best, !worst, !lookup, !average, "
         message += "!median, !teamtime, !balance, !join, !leave, !about.\n"
         message += "Run !help <command> to get detailed help for a command."
