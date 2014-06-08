@@ -1,6 +1,8 @@
 import socket
 import traceback
 import re
+import pickle
+import os
 from collections import deque
 from datetime import timedelta
 from termcolor import colored, cprint
@@ -10,10 +12,12 @@ from srlparser import Racer, Result
 def isPing(ircmsg):
     return "PING :" in ircmsg
 
-# users who can kill the bingobot using !kill
-# this is devs, ops, and voices on #bingoleague
+# users with !say and !command privelages, very dangerous
 ADMINS = ["saltor", "saltor_"]
-PRIVELAGED_USERS = ADMINS + ["gombill", "keymakr", "exodus", "balatee"]
+
+# ops file name
+# has names of users who can !kill and !blacklist
+OPS_FILE = "ops"
 
 channelPattern = re.compile("^#.+$")
 
@@ -25,7 +29,7 @@ def hello(bot, msg):
 
 def say(bot, msg):
     if msg.command == "!say":
-        if msg.sender.lower() in ADMINS:
+        if bot.hasAdmin(msg.sender):
             if channelPattern.match(msg.arguments[0]):
                 bot.sendmsg(msg.arguments[0], " ".join(msg.arguments[1:]))
             else:
@@ -33,7 +37,7 @@ def say(bot, msg):
 
 def command(bot, msg):
     if msg.command == "!command":
-        if msg.sender.lower() in ADMINS:
+        if bot.hasAdmin(msg.sender):
             bot.send(" ".join(msg.arguments) + "\n")
              
 def join(bot, msg):
@@ -45,7 +49,6 @@ def join(bot, msg):
             else:
                 bot.sendmsg(msg.channel, "Is \"" + argument + "\" a channel?") 
         
-
 def leave(bot, msg):
     if msg.command == "!leave":
         if msg.channel != "#bingoleague":
@@ -54,8 +57,38 @@ def leave(bot, msg):
         else:
             message = "Error, cannot !leave #bingoleague. Ask an op or voice to /kick or !kill."
             bot.sendmsg(msg.channel, message)
+
+def op(bot, msg):
+    if msg.command == "!op":
+        if bot.hasOp(msg.sender):
+            username = msg.usernames[0]
+            if bot.hasOp(username):
+                message = username + " is already an op."
+            else:
+                bot.addOp(username)
+                message = username + " has been opped."
+            bot.sendmsg(msg.channel, message)
+
+def deop(bot, msg):
+    if msg.command == "!deop":
+        if bot.hasOp(msg.sender):
+            username = msg.usernames[0]
+            if bot.hasAdmin(username):
+                message = username + " cannot be deopped."
+            elif not bot.hasOp(username):
+                message = username + " is not an op."
+            else:
+                bot.removeOp(username)
+                message = username + " has been deopped."
+            bot.sendmsg(msg.channel, message)
+
+def ops(bot, msg):
+    if msg.command == "!ops":
+        message = "Bot Ops: " + ", ".join(bot.ops) 
+        bot.sendmsg(msg.channel, message)
+
     
-builtinCommands = [hello, say, command, join, leave]
+builtinCommands = [hello, say, command, join, leave, op, deop, ops]
 
 # end built in commands
 
@@ -67,6 +100,7 @@ class KillException(Exception):
 
 
 class BingoBot:
+
     def __init__(self, nick, password, server, channels=[], commands=[]):
         self.nick = nick
         self.password = password
@@ -75,6 +109,13 @@ class BingoBot:
         self.commands = builtinCommands + commands
         self.messageQueue = deque()
         self.racers = dict()
+
+        # load from config files
+        if os.path.exists(OPS_FILE):
+            with open(OPS_FILE, "rb") as opsFile:
+                self.ops = pickle.load(opsFile)
+        else:
+            self.ops = set()
 
     def send(self, s):
         print(colored("OUTGOING: " + s.strip(), "magenta"))
@@ -143,7 +184,7 @@ class BingoBot:
         # WARNING: the bot will not reconnect until manually reset
         elif msg.command == "!kill" :
             print(colored("Kill request detected from " + msg.sender.lower(), "yellow"))
-            if msg.sender.lower() in PRIVELAGED_USERS:
+            if self.hasOp(msg.sender):
                 # actually kills the bot if the sender is privelaged
                 self.send("QUIT Kill requested by " + msg.sender + "\n")
                 raise KillException
@@ -169,5 +210,23 @@ class BingoBot:
             except:
                 raise NameException(username)
         return self.racers[username]
+
+    def hasAdmin(self, name):
+        return name.lower() in ADMINS
+
+    def hasOp(self, name):
+        return name.lower() in self.ops or self.hasAdmin(name)
+
+    def addOp(self, name):
+        self.ops.add(name.lower())
+        self.saveOps()
+
+    def removeOp(self, name):
+        self.ops.remove(name.lower())
+        self.saveOps()
+
+    def saveOps(self):
+        with open(OPS_FILE, "wb") as opsFile:
+            pickle.dump(self.ops, opsFile)
 
 
