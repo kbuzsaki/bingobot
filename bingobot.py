@@ -8,6 +8,7 @@ from datetime import timedelta
 from termcolor import colored, cprint
 from messages import Message, isMessage
 from srlparser import Racer, Result
+from blacklist import Blacklist, FilteredRacer
 
 def isPing(ircmsg):
     return "PING :" in ircmsg
@@ -109,6 +110,7 @@ class BingoBot:
         self.commands = builtinCommands + commands
         self.messageQueue = deque()
         self.racers = dict()
+        self.blacklist = Blacklist("blacklist")
 
         # load from config files
         if os.path.exists(OPS_FILE):
@@ -206,7 +208,7 @@ class BingoBot:
         if (refresh or username not in self.racers):
             try:
                 self.sendmsg(channel, "Loading data for " + username + "...")
-                self.racers[username] = Racer(username)
+                self.racers[username] = FilteredRacer(username, self.blacklist)
             except:
                 raise NameException(username)
         return self.racers[username]

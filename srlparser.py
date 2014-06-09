@@ -88,7 +88,11 @@ class Result:
 class Racer:
     def __init__(self, username):
         self.username = username.strip()
-        self.results = getPastBingoResults(username)
+        self.bingoResults = getPastBingoResults(username)
+
+    @property
+    def results(self):
+        return self.bingoResults
 
     def validResults(self):
         return [result for result in self.results if not result.isForfeit()]
