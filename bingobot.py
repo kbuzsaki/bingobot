@@ -1,6 +1,5 @@
 import socket
 import traceback
-import re
 import pickle
 import os
 from collections import deque
@@ -8,6 +7,7 @@ from datetime import timedelta
 from termcolor import colored, cprint
 from messages import Message, isMessage
 from srlparser import Racer, Result
+from botcommands import builtinCommands
 from blacklist import Blacklist, FilteredRacer
 
 def isPing(ircmsg):
@@ -20,78 +20,9 @@ ADMINS = ["saltor", "saltor_"]
 # has names of users who can !kill and !blacklist
 OPS_FILE = "ops"
 
-channelPattern = re.compile("^#.+$")
-
-def hello(bot, msg):
-    if msg.contains("Hello " + bot.nick) or msg.contains("Hi " + bot.nick):
-        bot.sendmsg(msg.channel, "Hello, " + msg.sender + "!")
-
-# built in commands
-
-def say(bot, msg):
-    if msg.command == "!say":
-        if bot.hasAdmin(msg.sender):
-            if channelPattern.match(msg.arguments[0]):
-                bot.sendmsg(msg.arguments[0], " ".join(msg.arguments[1:]))
-            else:
-                bot.sendmsg(msg.channel, " ".join(msg.arguments))
-
-def command(bot, msg):
-    if msg.command == "!command":
-        if bot.hasAdmin(msg.sender):
-            bot.send(" ".join(msg.arguments) + "\n")
-             
-def join(bot, msg):
-    if msg.command == "!join":
-        for argument in msg.arguments:
-            if channelPattern.match(argument):
-                bot.sendmsg(msg.channel, "Joining " + argument + "...")
-                bot.joinchan(argument)
-            else:
-                bot.sendmsg(msg.channel, "Is \"" + argument + "\" a channel?") 
-        
-def leave(bot, msg):
-    if msg.command == "!leave":
-        if msg.channel != "#bingoleague":
-            bot.sendmsg(msg.channel, "Leaving " + msg.channel + "...")
-            bot.leavechan(msg.channel)
-        else:
-            message = "Error, cannot !leave #bingoleague. Ask an op or voice to /kick or !kill."
-            bot.sendmsg(msg.channel, message)
-
-def op(bot, msg):
-    if msg.command == "!op":
-        if bot.hasOp(msg.sender):
-            username = msg.usernames[0]
-            if bot.hasOp(username):
-                message = username + " is already an op."
-            else:
-                bot.addOp(username)
-                message = username + " has been opped."
-            bot.sendmsg(msg.channel, message)
-
-def deop(bot, msg):
-    if msg.command == "!deop":
-        if bot.hasOp(msg.sender):
-            username = msg.usernames[0]
-            if bot.hasAdmin(username):
-                message = username + " cannot be deopped."
-            elif not bot.hasOp(username):
-                message = username + " is not an op."
-            else:
-                bot.removeOp(username)
-                message = username + " has been deopped."
-            bot.sendmsg(msg.channel, message)
-
-def ops(bot, msg):
-    if msg.command == "!ops":
-        message = "Bot Ops: " + ", ".join(bot.ops) 
-        bot.sendmsg(msg.channel, message)
-
-    
-builtinCommands = [hello, say, command, join, leave, op, deop, ops]
-
-# end built in commands
+# blacklist file name
+# has ids of blacklisted races
+BLACKLIST_FILE = "blacklist"
 
 class NameException(Exception):
     pass
@@ -110,7 +41,7 @@ class BingoBot:
         self.commands = builtinCommands + commands
         self.messageQueue = deque()
         self.racers = dict()
-        self.blacklist = Blacklist("blacklist")
+        self.blacklist = Blacklist(BLACKLIST_FILE)
 
         # load from config files
         if os.path.exists(OPS_FILE):
@@ -184,7 +115,7 @@ class BingoBot:
             pass
         # kill command to force disconnect the bot from the server
         # WARNING: the bot will not reconnect until manually reset
-        elif msg.command == "!kill" :
+        elif msg.command == "!kill":
             print(colored("Kill request detected from " + msg.sender.lower(), "yellow"))
             if self.hasOp(msg.sender):
                 # actually kills the bot if the sender is privelaged
