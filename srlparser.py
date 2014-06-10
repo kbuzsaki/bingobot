@@ -63,6 +63,9 @@ def getAverageTime(times):
     else:
         return 0
 
+def getRaceUrl(raceId):
+    return "http://www.speedrunslive.com/races/result/#!/" + str(raceId)
+
 class Result:
     def __init__(self, resultJson):
         self.raceid = resultJson["race"]
@@ -83,7 +86,7 @@ class Result:
         return API_URL + "pastraces?id=" + str(self.raceid)
 
     def raceUrl(self):
-        return "http://www.speedrunslive.com/races/result/#!/" + str(self.raceid)
+        return getRaceUrl(self.raceid)
 
 class Racer:
     def __init__(self, username):
