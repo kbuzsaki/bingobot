@@ -1,4 +1,5 @@
 import re
+from srlparser import getRaceUrl
 
 channelPattern = re.compile("^#.+$")
 
@@ -39,6 +40,7 @@ def leave(bot, msg):
             message = "Error, cannot !leave #bingoleague. Ask an op or voice to /kick or !kill."
             bot.sendmsg(msg.channel, message)
 
+# op commands
 def op(bot, msg):
     if msg.command == "!op":
         if bot.hasOp(msg.sender):
@@ -68,6 +70,38 @@ def ops(bot, msg):
         message = "Bot Ops: " + ", ".join(bot.ops) 
         bot.sendmsg(msg.channel, message)
 
+# blacklist commands 
+def blacklist(bot, msg):
+    if msg.command == "!blacklist":
+        if bot.hasOp(msg.sender):
+            raceId = msg.numbers[0]
+            if raceId in bot.blacklist:
+                message = "Race " + str(raceId) + " is already blacklisted."
+            else:
+                bot.blacklist.add(raceId)
+                message = "Race " + str(raceId) + " has been blacklisted."
+            bot.sendmsg(msg.channel, message)
+
+def unblacklist(bot, msg):
+    if msg.command == "!unblacklist":
+        if bot.hasOp(msg.sender):
+            raceId = msg.numbers[0]
+            if raceId not in bot.blacklist:
+                message = "Race " + str(raceId) + " is not blacklisted."
+            else:
+                bot.blacklist.remove(raceId)
+                message = "Race " + str(raceId) + " has been unblacklisted."
+            bot.sendmsg(msg.channel, message)
+
+def blacklisted(bot, msg):
+    if msg.command == "!blacklisted":
+        if msg.detailed:
+            message = "Blacklisted Races:\n"
+            message += "\n".join([getRaceUrl(raceId) for raceId in bot.blacklist])
+        else:
+            message = "Blacklisted Races: " 
+            message += ", ".join([str(raceId) for raceId in bot.blacklist]) 
+        bot.sendmsg(msg.channel, message)
     
 builtinCommands = [hello, say, command, join, leave, op, deop, ops]
 

@@ -6,6 +6,7 @@ from srlparser import Racer
 class Blacklist:
     
     def __init__(self, filename="blacklist"):
+        self.filename = filename
         if os.path.exists(filename):
             with open(filename, "rb") as blacklistFile:
                 self.races = pickle.load(blacklistFile)
@@ -21,9 +22,11 @@ class Blacklist:
 
     def add(self, race):
         self.races.add(race)
+        self.save()
 
     def remove(self, race):
         self.races.remove(race)
+        self.save()
 
     def save(self):
         with open(self.filename, "wb") as blacklistFile:
