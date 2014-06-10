@@ -103,7 +103,41 @@ def blacklisted(bot, msg):
             message += ", ".join([str(raceId) for raceId in bot.blacklist]) 
         bot.sendmsg(msg.channel, message)
     
-builtinCommands = [hello, say, command, join, leave, op, deop, ops]
+# op help commands
+NAME = "RacerName"
+
+def ophelp(bot, msg):
+    if msg.command != "!ophelp":
+        return
+    search = msg.arguments[0] if len(msg.arguments) > 0 else None
+
+    if search == None:
+        message = "Operator Commands: !op, !deop, !blacklist, !unblacklist, !kill\n"
+        message += "Run !ophelp <command> to get detailed help for a command."
+    elif "deop" in search:
+        message = "Removes operator status from a user. Prevents them from using operator commands.\n"
+        message += "Example: \"!deop " + NAME + "\""
+    elif "op" in search:
+        message = "Gives operator status from a user. Lets them use operator commands.\n"
+        message += "Example: \"!op " + NAME + "\""
+    elif "unblacklist" in search:
+        message = "Reverses a blacklisting, causing BingoBot to again use a race when calculating results. "
+        message += "Use the race's ID to identify it.\n"
+        message += "Example: \"!unblacklist 100176\""
+    elif "blacklist" in search:
+        message = "Blacklists a given race, causing BingoBot to ignore it when calculating results. "
+        message += "Use the race's ID to identify it.\n"
+        message += "Example: \"!blacklist 100176\""
+    elif "kill" in search:
+        message = "Causes BingoBot to shutdown. Use only in emergency situations if Bingo is misbehaving. "
+        message += "BingoBot will be unavailable until it is restarted by Saltor.\n"
+        message += "Example: \"!kill\""
+    else:
+        message = "No help information for " + msg.arguments[0]
+
+    bot.sendmsg(msg.channel, message)
+
+builtinCommands = [hello, say, command, join, leave, op, deop, ops, blacklist, unblacklist, blacklisted, ophelp]
 
 # end built in commands
              
