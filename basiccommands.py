@@ -3,6 +3,10 @@ from termcolor import colored
 
 # helper method for bot
 
+NUMBER_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+             "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen",
+             "eighteen", "nineteen", "twenty"]
+
 def formatTime(delta):
     return str(delta).split(".")[0]
 
@@ -218,6 +222,62 @@ def balance(bot, msg):
         message += "Team two: \"" + ", ".join(teamTwoNames) + "\" (" + formatTime(teamTwoTime) + ")"
         bot.sendmsg(msg.channel, message)
 
+def fastBalance(bot, msg):
+    if msg.command == "!fastbalance":
+        racers = [bot.getRacer(msg.channel, username, msg.refresh) for username in msg.usernames]
+
+        # calcualtes the effective goal completion rate of each racer
+        stats = [(racer.medianTime(0, 15), racer.completionRate(), racer.username) for racer in racers]
+        adjustedStats = [(time - AVG_BASE, successRate, name) for (time, successRate, name) in stats]
+        participants = [(multDelta(time, 1 / rate), name) for (time, rate, name) in adjustedStats] 
+        participants += [(time - AVG_BASE, str(time)) for time in msg.times]
+        
+        if len(participants) % 3 != 0:
+            message = "Must be divisible by three to form teams"
+            bot.sendmsg(msg.channel, message)
+            return
+
+        # get the (work rate, name) tuples for each participant
+        participants = [(1 / rate.total_seconds(), name) for (rate, name) in participants]
+
+        # sort so highest work rates are at the top
+        participants = sorted(participants, reverse=True)
+
+        # sort into three tiers of players
+        numTeams = len(participants) // 3 
+
+        tierOne = participants[:numTeams]
+        tierTwo = participants[numTeams:numTeams*2]
+        tierThree = participants[numTeams*2:]
+
+        teams = []
+
+        # pair the best of tier 1 with worst of tier 2
+        for playerIndex in range(numTeams):
+            teams.append([tierOne[playerIndex], tierTwo[-playerIndex - 1]])
+
+        #sorts the resulting teams with highest work rates at the top
+        teamRate = lambda team: team[0][0] + team[1][0]
+        teams = sorted(teams, key=teamRate, reverse=True)
+
+        # pair the best current teams with the worst tier 3 players
+        for playerIndex in range(numTeams):
+            teams[playerIndex].append(tierThree[-playerIndex - 1])
+
+        message = ""
+        teamNumber = 0;
+
+        # print the teams
+        for team in teams:
+            teamNames = [name for (rate, name) in team]
+            teamTime = getTeamTime([rate for (rate, name) in team])
+            teamNumber += 1
+            message += "Team " + NUMBER_WORDS[teamNumber]+ ": \"" + ", ".join(teamNames) + "\" "
+            message += "(" + formatTime(teamTime) + ")\n"
+            
+        bot.sendmsg(msg.channel, message) 
+        
+
 NAME = "RacerName"
 RANGE_MESSAGE = "Optionally, you can specify a maximum number of races or range of races to use. "
 REFRESH_MESSAGE = "Add \"refresh\" to force reload race data. "
@@ -305,7 +365,7 @@ def about(bot, msg):
 
 queryCommands = [racerStats, lookupRace]
 listCommands = [pastTimes, rankPlayers, bestTime, worstTime]
-calculationCommands = [averageTime, medianTime, teamTime, balance]
+calculationCommands = [averageTime, medianTime, teamTime, balance, fastBalance]
 metaCommands = [help, about]
 allCommands = queryCommands + listCommands + calculationCommands + metaCommands    
 
