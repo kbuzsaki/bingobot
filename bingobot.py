@@ -8,7 +8,8 @@ from termcolor import colored, cprint
 from messages import Message, isMessage
 from srlparser import Racer, Result
 from botcommands import builtinCommands
-from blacklist import Blacklist, FilteredRacer
+from blacklist import Blacklist
+from racercache import RacerCache, NameException
 
 def isPing(ircmsg):
     return "PING :" in ircmsg
@@ -24,8 +25,7 @@ OPS_FILE = "ops"
 # has ids of blacklisted races
 BLACKLIST_FILE = "blacklist"
 
-class NameException(Exception):
-    pass
+RACER_CACHE_FILE = "racercache"
 
 class KillException(Exception):
     pass
@@ -40,8 +40,8 @@ class BingoBot:
         self.channels = channels
         self.commands = builtinCommands + commands
         self.messageQueue = deque()
-        self.racers = dict()
         self.blacklist = Blacklist(BLACKLIST_FILE)
+        self.racerCache = RacerCache(RACER_CACHE_FILE)
 
         # load from config files
         if os.path.exists(OPS_FILE):
@@ -135,14 +135,9 @@ class BingoBot:
                     self.sendmsg(msg.channel, "Something weird happened...")
 
     def getRacer(self, channel, username, refresh=False):
-        username = username.lower()
-        if (refresh or username not in self.racers):
-            try:
-                self.sendmsg(channel, "Loading data for " + username + "...")
-                self.racers[username] = FilteredRacer(username, self.blacklist)
-            except:
-                raise NameException(username)
-        return self.racers[username]
+        if refresh:
+            self.racerCache.refresh(username, self, channel)
+        return self.racerCache.getOrLoad(username, self, channel)
 
     def hasAdmin(self, name):
         return name.lower() in ADMINS
