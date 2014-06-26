@@ -21,6 +21,12 @@ def command(bot, msg):
     if msg.command == "!command":
         if bot.hasAdmin(msg.sender):
             bot.send(" ".join(msg.arguments) + "\n")
+
+def clear(bot, msg):
+    if msg.command == "!clear":
+        if bot.hasAdmin(msg.sender):
+            bot.racerCache.clear()
+            bot.sendmsg(msg.channel, "Cache cleared.")
              
 def join(bot, msg):
     if msg.command == "!join":
@@ -137,7 +143,10 @@ def ophelp(bot, msg):
 
     bot.sendmsg(msg.channel, message)
 
-builtinCommands = [hello, say, command, join, leave, op, deop, ops, blacklist, unblacklist, blacklisted, ophelp]
+adminCommands = [say, command, clear]
+opCommands = [op, deop, blacklist, unblacklist]
+otherCommands = [hello, join, leave, ops, blacklisted, ophelp]
+builtinCommands = adminCommands + opCommands + otherCommands
 
 # end built in commands
              

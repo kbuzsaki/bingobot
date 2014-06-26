@@ -41,6 +41,10 @@ class RacerCache:
         for racer in self.entries:
             yield racer
 
+    def clear(self):
+        self.entries.clear()
+        self.save()
+
     def refresh(self, username, bot, channel):
         try:
             bot.sendmsg(channel, "Loading data for " + username + "...")
