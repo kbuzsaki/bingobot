@@ -282,6 +282,7 @@ NAME = "RacerName"
 RANGE_MESSAGE = "Optionally, you can specify a maximum number of races or range of races to use. "
 REFRESH_MESSAGE = "Add \"refresh\" to force reload race data. "
 DETAILED_MESSAGE = "Add \"detailed\" to get race dates and urls. "
+EXACT_TIMES_MESSAGE = "Alternatively, you can supply exact times to use in the calculation. " 
 
 def bingoBotPls(text):
     text = text.lower()
@@ -324,18 +325,27 @@ def help(bot, msg):
         message = "Calculates the median time for a racer from their past N races. "
         message += RANGE_MESSAGE + REFRESH_MESSAGE + "\n"
         message += "Examples: \"!median " + NAME + "\", \"!median " + NAME + " 5\""
+    elif "rank" in search:
+        message = "Finds each player's median result from their past 15 races and then ranks them "
+        message += "according to those times. " + REFRESH_MESSAGE + "\n"
+        message += "Examples: \"!rank " + NAME + "1 " + NAME + "2 " + NAME + "3 \""
     elif "teamtime" in search:
         message = "Calculates the expected time blackout bingo time for a team of players. "
         message += "Uses each player's average from their past 15 bingo results. "
-        message += "Alternatively, you can supply exact times to use in the calculation. "
-        message += REFRESH_MESSAGE + "\n"
+        message += EXACT_TIMES_MESSAGE + REFRESH_MESSAGE + "\n"
         message += "Examples: \"!teamtime bradwickliffe1997 gombill saltor\", "
         message += "\"!teamtime " + NAME + " 1:20:15 1:34:17\""
+    elif "fastbalance" in search:
+        message = "Finds relatively balanced teams for any set of 6, 9, 12, etc. players. "
+        message += "Ranks players by their average bingo times, splits them up into high, medium, "
+        message += "and low \"tiers\", and then forms teams by taking one racer from each group."
+        message += "Uses each player's average from their past 15 bingo results. "
+        message += EXACT_TIMES_MESSAGE + REFRESH_MESSAGE + "\n"
+        message += "Example: \"!fastbalance bradwickliffe1997 gombill saltor thecowness balatee exodus\"."
     elif "balance" in search:
         message = "Finds the optimally balanced teams for a set of 6 players. "
         message += "Uses each player's average from their past 15 bingo results. "
-        message += "Alternatively, you can supply exact times to use in the calculation. "
-        message += REFRESH_MESSAGE + "\n"
+        message += EXACT_TIMES_MESSAGE + REFRESH_MESSAGE + "\n"
         message += "Example: \"!balance bradwickliffe1997 gombill saltor thecowness balatee exodus\"."
     elif "help" in search:
         message = "Displays a help message explaining how to use a command.\n"
