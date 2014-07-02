@@ -24,41 +24,36 @@ def getNumberRaces(player):
     statsJson = loadJsonFromUrl(getStatsUrl(player))
     return statsJson["stats"]["totalRaces"]
 
-def getResultsUrl(player):
-    numRaces = getNumberRaces(player)
-    return API_URL + "pastraces?player=" + player + "&pageSize=" + str(numRaces)
+def getResultsUrl(player, raceCount=-1):
+    if raceCount == -1:
+        raceCount = getNumberRaces(player)
+    return API_URL + "pastraces?player=" + player + "&pageSize=" + str(raceCount)
 
-def getPastRaces(player):
-    resultsJson = loadJsonFromUrl(getResultsUrl(player))
+def getRaceHistory(player, raceCount=-1):
+    resultsJson = loadJsonFromUrl(getResultsUrl(player, raceCount))
     return resultsJson["pastraces"]
 
 BINGO_V8_RELEASE = date(2013, 9, 11)
 
-def getPastBingoRaces(player):
-    pastRaces = getPastRaces(player)
+def getBingosFrom(raceHistory):
     bingoRaces = []
-    for race in pastRaces:
+    for race in raceHistory:
         raceDate = date.fromtimestamp(float(race["date"]))
         if isBingoGoal(race["goal"]) and raceDate > BINGO_V8_RELEASE:
             bingoRaces.append(race)
     return bingoRaces
 
-def getPastBingoResultsJson(player):
-    bingoRaces = getPastBingoRaces(player)
+def getResultsFrom(bingoRaces, player):
     bingoResults = []
     for race in bingoRaces:
-        for result in race["results"]:
-            if result["player"].lower() == player.lower():
-                result["date"] = race["date"]
-                bingoResults.append(result)
+        for resultJson in race["results"]:
+            if resultJson["player"].lower() == player.lower():
+                resultJson["date"] = race["date"]
+                bingoResults.append(Result(resultJson))
     return bingoResults
 
-def getPastBingoResults(player):
-    resultJsons = getPastBingoResultsJson(player)
-    return [Result(resultJson) for resultJson in resultJsons]
-
 def getAverageTime(times):
-    if(len(times) > 0):
+    if len(times) > 0:
         return sum(times, timedelta(0)) / len(times)
     else:
         return 0
@@ -91,7 +86,17 @@ class Result:
 class Racer:
     def __init__(self, username):
         self.username = username.strip()
-        self.bingoResults = getPastBingoResults(username)
+        raceHistory = getRaceHistory(self.username)
+        self.numLoadedRaces = len(raceHistory)
+        self.bingoResults = getResultsFrom(getBingosFrom(raceHistory), self.username)
+
+    def update(self):
+        numOutdated = getNumberRaces(self.username) - self.numLoadedRaces
+        if numOutdated > 0:
+            newRaces = getRaceHistory(self.username, numOutdated)
+            newBingoResults = getResultsFrom(getBingosFrom(newRaces), self.username)
+            self.bingoResults = newBingoResults + self.bingoResults
+            self.numLoadedRaces += numOutdated
 
     @property
     def results(self):
