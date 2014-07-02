@@ -105,7 +105,7 @@ class BingoBot:
             for channel in self.channels:
                 self.joinchan(channel)
         # weird hack thing for nickserv identify
-        if "NickServ" in ircmsg and "/msg NickServ IDENTIFY" in ircmsg:
+        if "NickServ IDENTIFY" in ircmsg:
             self.sendmsg("NickServ", "IDENTIFY " + self.password)
 
     def processMessage(self, ircmsg):
