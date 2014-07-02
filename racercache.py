@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from srlparser import Racer
 from blacklist import FilteredRacer
 
-TIME_THRESHOLD = timedelta(hours=24)
+TIME_THRESHOLD = timedelta(hours=1)
 
 def load(username, blacklist):
     racer = FilteredRacer(username, blacklist)
@@ -14,6 +14,10 @@ class RacerCacheEntry:
 
     def __init__(self, racer):
         self.racer = racer
+        self.loadtime = datetime.now()
+
+    def update(self):
+        self.racer.update()
         self.loadtime = datetime.now()
 
     @property
@@ -53,10 +57,17 @@ class RacerCache:
         except:
             raise NameException(username)
 
+    def update(self, username, bot, channel):
+        bot.sendmsg(channel, "Updating data for " + username + "...")
+        self.entries[username].update()
+        self.save()
+
     def getOrLoad(self, username, bot, channel):
         username = username.lower()
-        if (username not in self.entries or self.entries[username].outdated):
+        if username not in self.entries:
             self.refresh(username, bot, channel)
+        if self.entries[username].outdated:
+            self.update(username, bot, channel)
         return self.entries[username].racer
 
     def save(self):
