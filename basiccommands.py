@@ -369,7 +369,7 @@ def help(bot, msg):
 
 def about(bot, msg):
     if msg.command == "!about":
-        message = "Version 0.5\n"
+        message = "Version 0.6\n"
         message += "Created by Saltor. !teamtime algorithm by Gombill."
         bot.sendmsg(msg.channel, message)
 
