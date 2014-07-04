@@ -19,13 +19,13 @@ ADMINS = ["saltor", "saltor_"]
 
 # ops file name
 # has names of users who can !kill and !blacklist
-OPS_FILE = "ops"
+OPS_FILE = "data/ops"
 
 # blacklist file name
 # has ids of blacklisted races
-BLACKLIST_FILE = "blacklist"
+BLACKLIST_FILE = "data/blacklist"
 
-RACER_CACHE_FILE = "racercache"
+RACER_CACHE_FILE = "data/racercache"
 
 class KillException(Exception):
     pass

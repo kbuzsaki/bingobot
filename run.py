@@ -9,7 +9,7 @@ channels = ["#bingoleague", "#speedrunslive"]
 botnick = "BingoBot"
 password = ""
 
-with open("password", "r") as passwordFile:
+with open("data/password", "r") as passwordFile:
     password = passwordFile.readline()
 
 bingoBot = BingoBot(botnick, password, server, channels, commands = allCommands)
