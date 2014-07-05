@@ -179,7 +179,7 @@ def help(bot, msg):
         message += EXACT_TIMES_MESSAGE + REFRESH_MESSAGE + "\n"
         message += "Example: \"!fastbalance bradwickliffe1997 gombill saltor thecowness balatee exodus\"."
     elif "balance" in search:
-        message = "Finds the optimally balanced teams for a set of 6 players. "
+        message = "Finds the optimally balanced teams for a set of 6, 9, or 12 players. "
         message += "Uses each player's average from their past 15 bingo results. "
         message += EXACT_TIMES_MESSAGE + REFRESH_MESSAGE + "\n"
         message += "Example: \"!balance bradwickliffe1997 gombill saltor thecowness balatee exodus\"."
@@ -205,7 +205,7 @@ def help(bot, msg):
 
 def about(bot, msg):
     if msg.command == "!about":
-        message = "Version 0.6\n"
+        message = "Version 0.7\n"
         message += "Created by Saltor. !teamtime algorithm by Gombill."
         bot.sendmsg(msg.channel, message)
 
