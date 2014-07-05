@@ -1,6 +1,5 @@
 from datetime import timedelta
 from termcolor import colored
-from statistics import variance
 from basiccommands import formatTime
 
 NUMBERS = "one two three four five six seven eight nine ten eleven twelve".split()
@@ -27,6 +26,11 @@ def chunkList(elements, step=3):
     chunks = len(elements) // step
     for index in range(chunks):
         yield elements[index * step : (index + 1) * step]
+
+def variance(elements):
+    mean = sum(elements) / len(elements)
+    squares = [(mean - element) ** 2 for element in elements]
+    return sum(squares) / len(squares)
 
 # constants and helpers for teamTime()
 AVG_BLACKOUT = timedelta(hours=3, minutes=15)
