@@ -135,6 +135,8 @@ def toEffectiveRate(averageTime, successRate):
 def mapToScore(workRate):
     x = workRate * 10000
     score = (-0.628391 * x**3) + (2.3329 * x**2) + (27.3814 * x) - 13.1937 
+    score = (-3.42695 * x**3) + (21.0366 * x**2) - (3.8904 * x) - 1
+    score = (-0.0506626 * x**3) - (4.67561 * x**2) + (50.2346 * x) - 22.9405
     return score
     
 # hidden command
@@ -160,20 +162,28 @@ def effectiveRate(bot, msg):
 def effectiveScore(bot, msg):
     if msg.command == "!score":
         if len(msg.times) > 0:
-            effectiveRate = toEffectiveRate(msg.times[0], successRate=1.0)
+            averageTime = msg.times[0]
+            successRate = 1.0
             identifier = str(msg.times[0])
         else:
             racer = bot.getRacer(msg.channel, msg.username, msg.refresh)
             times = racer.validTimes()[msg.minimum:msg.maximum]
             averageTime = sum(times, timedelta()) / len(times)
             successRate = max(racer.completionRate(), 0.5)
-            effectiveRate = toEffectiveRate(averageTime, successRate)
             identifier = racer.username
 
+        effectiveRate = toEffectiveRate(averageTime, successRate)
         workRate = 1 / effectiveRate.total_seconds()
         workScore = mapToScore(workRate)
 
-        message = "Adjusted score for " + identifier + ": " + str(int(workScore)) 
+        if msg.detailed:
+            message = identifier + " has an average time of " + formatTime(averageTime)
+            message += " and a consistency of " + str(round(successRate, 2)) + ", leading "
+            message += "to an effective time of " + formatTime(effectiveRate + AVG_BASE) + ".\n"
+            message += "Their adjusted score is: " + str(int(workScore)) + ". "
+            message += "(" + str(workRate * 10000) + ")"
+        else:
+            message = "Adjusted score for " + identifier + ": " + str(int(workScore)) + "."
 
         bot.sendmsg(msg.channel, message)
 
