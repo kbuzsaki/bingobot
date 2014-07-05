@@ -105,8 +105,9 @@ class BingoBot:
             for channel in self.channels:
                 self.joinchan(channel)
         # weird hack thing for nickserv identify
-        if "NickServ IDENTIFY" in ircmsg:
-            self.sendmsg("NickServ", "IDENTIFY " + self.password)
+        if "NickServ!services@speedrunslive.com" in ircmsg:
+            if "You are already identified." not in ircmsg:
+                self.sendmsg("NickServ", "IDENTIFY " + self.password)
 
     def processMessage(self, ircmsg):
         msg = Message(ircmsg)
