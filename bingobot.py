@@ -116,7 +116,7 @@ class BingoBot:
             pass
         # kill command to force disconnect the bot from the server
         # WARNING: the bot will not reconnect until manually reset
-        elif msg.command == "!kill":
+        elif msg.command in {"!kill", ".kill"}:
             print(colored("Kill request detected from " + msg.sender.lower(), "yellow"))
             if self.hasOp(msg.sender):
                 # actually kills the bot if the sender is privelaged
@@ -157,5 +157,6 @@ class BingoBot:
     def saveOps(self):
         with open(OPS_FILE, "wb") as opsFile:
             pickle.dump(self.ops, opsFile)
+
 
 

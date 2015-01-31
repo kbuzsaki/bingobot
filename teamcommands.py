@@ -1,6 +1,7 @@
 from datetime import timedelta
 from termcolor import colored
 from basiccommands import formatTime
+from botcommands import command
 
 NUMBERS = "one two three four five six seven eight nine ten eleven twelve".split()
 
@@ -93,81 +94,81 @@ def getTeamTime(team):
 
     return blackoutTime
 
+@command("teamtime")
 def teamTime(bot, msg):
-    if msg.command == "!teamtime":
-        participants = getParticipants(bot, msg)
+    participants = getParticipants(bot, msg)
 
-        blackoutTime = getTeamTime(participants)
-        
-        message = "Team \"" + ", ".join(msg.usernames + [str(time) for time in msg.times]) 
-        message += "\" would take about " + formatTime(blackoutTime) + " to complete a blackout."
-        bot.sendmsg(msg.channel, message)
+    blackoutTime = getTeamTime(participants)
+    
+    message = "Team \"" + ", ".join(msg.usernames + [str(time) for time in msg.times]) 
+    message += "\" would take about " + formatTime(blackoutTime) + " to complete a blackout."
+    bot.sendmsg(msg.channel, message)
 
+@command("balance")
 def balance(bot, msg):
-    if msg.command == "!balance":
-        participants = getParticipants(bot, msg)
+    participants = getParticipants(bot, msg)
 
-        # ensure that a valid number of participants have been passed
-        if len(participants) not in [6, 9, 12]:
-            message = "Please provide a total of 6, 9, or 12 usernames/times to balance."
-            bot.sendmsg(msg.channel, message)
-            return
-
-        numTeams = len(participants) // 3
-        optimalTeams = list(chunkList(participants))
-        optimalVariance = variance([getTeamTime(team).total_seconds() for team in optimalTeams])
-        for pattern in PATTERNS_DICT[numTeams]:
-            order = [participants[x] for x in pattern]
-            newTeams = list(chunkList(order))
-            newVariance = variance([getTeamTime(team).total_seconds() for team in newTeams])
-            if newVariance < optimalVariance:
-                optimalTeams = newTeams
-                optimalVariance = newVariance
-
-        message = ""
-        for index, team in enumerate(optimalTeams):
-            message += "Team " + NUMBERS[index] + ": \"" + ", ".join([participant.name for participant in team])
-            message += "\" (" + formatTime(getTeamTime(team)) + ")\n"
+    # ensure that a valid number of participants have been passed
+    if len(participants) not in [6, 9, 12]:
+        message = "Please provide a total of 6, 9, or 12 usernames/times to balance."
         bot.sendmsg(msg.channel, message)
+        return
 
+    numTeams = len(participants) // 3
+    optimalTeams = list(chunkList(participants))
+    optimalVariance = variance([getTeamTime(team).total_seconds() for team in optimalTeams])
+    for pattern in PATTERNS_DICT[numTeams]:
+        order = [participants[x] for x in pattern]
+        newTeams = list(chunkList(order))
+        newVariance = variance([getTeamTime(team).total_seconds() for team in newTeams])
+        if newVariance < optimalVariance:
+            optimalTeams = newTeams
+            optimalVariance = newVariance
+
+    message = ""
+    for index, team in enumerate(optimalTeams):
+        message += "Team " + NUMBERS[index] + ": \"" + ", ".join([participant.name for participant in team])
+        message += "\" (" + formatTime(getTeamTime(team)) + ")\n"
+    bot.sendmsg(msg.channel, message)
+
+@command("fastbalance")
 def fastBalance(bot, msg):
-    if msg.command == "!fastbalance":
-        participants = getParticipants(bot, msg)
+    participants = getParticipants(bot, msg)
 
-        if len(participants) % 3 != 0:
-            message = "Must be divisible by three to form teams"
-            bot.sendmsg(msg.channel, message)
-            return
-
-        # sort so highest work rates are at the top
-        participants = sorted(participants, reverse=True)
-
-        # sort into three tiers of players
-        numTeams = len(participants) // 3 
-
-        tierOne = participants[:numTeams]
-        tierTwo = participants[numTeams:numTeams*2]
-        tierThree = participants[numTeams*2:]
-
-        teams = []
-
-        # pair the best of tier 1 with worst of tier 2
-        for playerIndex in range(numTeams):
-            teams.append([tierOne[playerIndex], tierTwo[-playerIndex - 1]])
-
-        #sorts the resulting teams with highest work rates at the top
-        teamRate = lambda team: team[0].workRate + team[1].workRate
-        teams = sorted(teams, key=teamRate, reverse=True)
-
-        # pair the best current teams with the worst tier 3 players
-        for playerIndex in range(numTeams):
-            teams[playerIndex].append(tierThree[-playerIndex - 1])
-
-        message = ""
-        for index, team in enumerate(teams):
-            message += "Team " + NUMBERS[index] + ": \"" + ", ".join([participant.name for participant in team])
-            message += "\" (" + formatTime(getTeamTime(team)) + ")\n"
+    if len(participants) % 3 != 0:
+        message = "Must be divisible by three to form teams"
         bot.sendmsg(msg.channel, message)
+        return
+
+    # sort so highest work rates are at the top
+    participants = sorted(participants, reverse=True)
+
+    # sort into three tiers of players
+    numTeams = len(participants) // 3 
+
+    tierOne = participants[:numTeams]
+    tierTwo = participants[numTeams:numTeams*2]
+    tierThree = participants[numTeams*2:]
+
+    teams = []
+
+    # pair the best of tier 1 with worst of tier 2
+    for playerIndex in range(numTeams):
+        teams.append([tierOne[playerIndex], tierTwo[-playerIndex - 1]])
+
+    #sorts the resulting teams with highest work rates at the top
+    teamRate = lambda team: team[0].workRate + team[1].workRate
+    teams = sorted(teams, key=teamRate, reverse=True)
+
+    # pair the best current teams with the worst tier 3 players
+    for playerIndex in range(numTeams):
+        teams[playerIndex].append(tierThree[-playerIndex - 1])
+
+    message = ""
+    for index, team in enumerate(teams):
+        message += "Team " + NUMBERS[index] + ": \"" + ", ".join([participant.name for participant in team])
+        message += "\" (" + formatTime(getTeamTime(team)) + ")\n"
+    bot.sendmsg(msg.channel, message)
 
 
 allCommands = [teamTime, balance, fastBalance]
