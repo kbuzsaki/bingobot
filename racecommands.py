@@ -2,6 +2,7 @@ from urllib.request import urlopen
 import execjs
 import json
 import random
+from termcolor import colored
 from botcommands import command
 
 SRL_BASE = "http://speedrunslive.com"
@@ -64,7 +65,7 @@ class BingoGenerator:
         # if we fail too many times, abort
         for attempt in range(100):
             seed = random.randint(0, 1000000)
-            print("trying seed: " + str(seed))
+            print(colored("trying seed: " + str(seed), "yellow"))
             card = self.getCard(seed)
             if isBlackoutCard(card, teamSize):
                 return seed, card
