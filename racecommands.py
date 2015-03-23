@@ -62,7 +62,7 @@ class BingoGenerator:
     def getBlackoutCard(self, teamSize=3):
         # just try to generate a bunch of cards
         # if we fail too many times, abort
-        for attempt in range(10):
+        for attempt in range(100):
             seed = random.randint(0, 1000000)
             print("trying seed: " + str(seed))
             card = self.getCard(seed)
