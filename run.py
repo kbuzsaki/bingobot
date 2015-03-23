@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from bingobot import BingoBot
 import basiccommands
 import teamcommands
+import racecommands
 
 TWO_MINUTES = timedelta(minutes=2)
 
@@ -9,7 +10,7 @@ server = "irc2.speedrunslive.com"
 channels = ["#bingoleague", "#speedrunslive"]
 botnick = "BingoBot"
 password = ""
-allCommands = basiccommands.allCommands + teamcommands.allCommands
+allCommands = basiccommands.allCommands + teamcommands.allCommands + racecommands.allCommands
 
 with open("data/password", "r") as passwordFile:
     password = passwordFile.readline()

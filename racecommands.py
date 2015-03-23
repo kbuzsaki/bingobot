@@ -2,6 +2,7 @@ from urllib.request import urlopen
 import execjs
 import json
 import random
+from botcommands import command
 
 SRL_BASE = "http://speedrunslive.com"
 BINGO_URL = SRL_BASE + "/tools/oot-bingo"
@@ -27,6 +28,10 @@ def loadGenerator():
 
 class BingoGenerator:
     CACHED_INSTANCE = None
+
+    @staticmethod
+    def loaded():
+        return BingoGenerator.CACHED_INSTANCE is not None
 
     @staticmethod
     def instance():
@@ -74,4 +79,19 @@ def isBlackoutCard(card, teamSize=3):
         return False
 
     return True
+
+def getCardUrl(seed):
+    return SRL_BASE + "/tools/oot-bingo/?seed=" + str(seed)
+
+@command("blackoutcard")
+def generateBlackoutCard(bot, msg):
+    if not BingoGenerator.loaded():
+        bot.sendmsg(msg.channel, "Loading Bingo Generator...")
+    generator = BingoGenerator.instance()
+
+    seed, card = generator.getBlackoutCard()
+    bot.sendmsg(msg.channel, getCardUrl(seed))
+
+
+allCommands = [generateBlackoutCard]
 
