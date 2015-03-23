@@ -68,6 +68,8 @@ class RacerCache:
             self.refresh(username, bot, channel)
         if self.entries[username].outdated:
             self.update(username, bot, channel)
+        # hack for fixing blacklist bug
+        self.entries[username].racer.blacklist = bot.blacklist
         return self.entries[username].racer
 
     def save(self):
