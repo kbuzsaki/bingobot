@@ -45,7 +45,7 @@ class BingoGenerator:
         BingoGenerator.CACHED_INSTANCE = loadGenerator()
 
     def __init__(self, generatorJs):
-        self.context = execjs.compile(generatorJs)
+        self.context = execjs.get("Node").compile(generatorJs)
 
     def getCard(self, seed=None):
         if seed is not None:
