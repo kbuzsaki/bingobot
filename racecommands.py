@@ -254,6 +254,12 @@ def generateBlackoutCard(bot, msg):
     seed, card = generator.getBlackoutCard()
     bot.sendmsg(msg.channel, getCardUrl(seed))
 
+@command("reloadgenerator")
+def reloadGenerator(bot, msg):
+    bot.sendmsg(msg.channel, "Loading Bingo Generator...")
+    BingoGenerator.reload()
+    bot.sendmsg(msg.channel, "Generator reloaded.")
 
-allCommands = [generateBlackoutCard]
+
+allCommands = [generateBlackoutCard, reloadGenerator]
 
