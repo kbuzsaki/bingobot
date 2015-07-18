@@ -13,9 +13,14 @@ def getPattern(line):
     return [int(digit, 16) for digit in line]
 
 PATTERNS_DICT = {
-    2: getPatterns("patterns/teams2"),
-    3: getPatterns("patterns/teams3"),
-    4: getPatterns("patterns/teams4") 
+    2: {
+        2: getPatterns("patterns/teams22")
+    },
+    3: {
+        2: getPatterns("patterns/teams2"),
+        3: getPatterns("patterns/teams3"),
+        4: getPatterns("patterns/teams4")
+    }
 }
 
 
@@ -74,7 +79,7 @@ class Participant:
 
 def getParticipants(bot, msg):
     racers = [bot.getRacer(msg.channel, username, msg.refresh) for username in msg.usernames]
-    participants = [Participant.fromRacer(racer) for racer in racers] 
+    participants = [Participant.fromRacer(racer) for racer in racers]
     participants += [Participant.fromTime(time) for time in msg.times]
     return participants
 
@@ -88,7 +93,7 @@ def getTeamTime(team):
     combinedRate = timedelta(seconds=(1 / combinedWorkRate))
 
     # the team's net average time is then scaled up to blackout scale
-    ratio = (AVG_BLACKOUT - AVG_BASE).total_seconds() / (AVG_REGULAR - AVG_BASE).total_seconds() 
+    ratio = (AVG_BLACKOUT - AVG_BASE).total_seconds() / (AVG_REGULAR - AVG_BASE).total_seconds()
     # the base 30 minutes are added back to convert the net time to total time
     blackoutTime = multDelta(combinedRate, ratio) + AVG_BASE + AVG_OVERLAP
 
@@ -99,8 +104,8 @@ def teamTime(bot, msg):
     participants = getParticipants(bot, msg)
 
     blackoutTime = getTeamTime(participants)
-    
-    message = "Team \"" + ", ".join(msg.usernames + [str(time) for time in msg.times]) 
+
+    message = "Team \"" + ", ".join(msg.usernames + [str(time) for time in msg.times])
     message += "\" would take about " + formatTime(blackoutTime) + " to complete a blackout."
     bot.sendmsg(msg.channel, message)
 
@@ -109,17 +114,22 @@ def balance(bot, msg):
     participants = getParticipants(bot, msg)
 
     # ensure that a valid number of participants have been passed
-    if len(participants) not in [6, 9, 12]:
-        message = "Please provide a total of 6, 9, or 12 usernames/times to balance."
+    if len(participants) not in [4, 6, 9, 12]:
+        message = "Please provide a total of 4, 6, 9, or 12 usernames/times to balance."
         bot.sendmsg(msg.channel, message)
         return
 
-    numTeams = len(participants) // 3
-    optimalTeams = list(chunkList(participants))
+    if len(participants) == 4:
+        teamSize = 2
+    else:
+        teamSize = 3
+
+    numTeams = len(participants) // teamSize
+    optimalTeams = list(chunkList(participants, teamSize))
     optimalVariance = variance([getTeamTime(team).total_seconds() for team in optimalTeams])
-    for pattern in PATTERNS_DICT[numTeams]:
+    for pattern in PATTERNS_DICT[teamSize][numTeams]:
         order = [participants[x] for x in pattern]
-        newTeams = list(chunkList(order))
+        newTeams = list(chunkList(order, teamSize))
         newVariance = variance([getTeamTime(team).total_seconds() for team in newTeams])
         if newVariance < optimalVariance:
             optimalTeams = newTeams
@@ -144,7 +154,7 @@ def fastBalance(bot, msg):
     participants = sorted(participants, reverse=True)
 
     # sort into three tiers of players
-    numTeams = len(participants) // 3 
+    numTeams = len(participants) // 3
 
     tierOne = participants[:numTeams]
     tierTwo = participants[numTeams:numTeams*2]
