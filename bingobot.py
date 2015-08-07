@@ -79,6 +79,14 @@ class BingoBot:
             # otherwise, wait for a new batch of messages
             else:
                 ircmsg = self.ircsock.recv(2048)
+
+                # empty string means closed socket, so exit
+                if not ircmsg:
+                    print(colored("*************************************", "red"))
+                    print(colored("SOCKET CLOSED", "red"))
+                    print(colored("*************************************", "red"))
+                    return
+
                 ircmsg = ircmsg.decode("latin-1").strip()
                 self.messageQueue.extend(ircmsg.split("\n"))
 
