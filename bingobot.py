@@ -3,13 +3,15 @@ import traceback
 import pickle
 import os
 from collections import deque
-from datetime import timedelta
+from datetime import datetime, timedelta
 from termcolor import colored, cprint
 from messages import Message, isMessage
 from srlparser import Racer, Result
 from botcommands import builtinCommands
 from blacklist import Blacklist
 from racercache import RacerCache, NameException
+
+TIMEOUT_SECONDS = 120
 
 def isPing(ircmsg):
     return "PING :" in ircmsg
@@ -51,11 +53,13 @@ class BingoBot:
             self.ops = set()
 
     def send(self, s):
-        print(colored("OUTGOING: " + s.strip(), "magenta"))
+        now = str(datetime.now())
+        print(colored(now + " - OUTGOING: " + s.strip(), "magenta"))
         self.ircsock.send(s.encode("latin-1"))
 
     def connect(self):
         self.ircsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.ircsock.settimeout(TIMEOUT_SECONDS)
         self.ircsock.connect((self.server, 6667))
         self.send("USER " + self.nick + " " + self.nick + " " + self.nick + " :BingoBot yo\n")
         self.send("NICK " + self.nick + "\n")
@@ -71,6 +75,7 @@ class BingoBot:
         self.send("PART " + chan + "\n")
 
     def listen(self):
+        numTimeouts = 0
         while True:
             # if messages are available, process them
             if(len(self.messageQueue) > 0):
@@ -78,17 +83,27 @@ class BingoBot:
                 self.processLine(ircmsg)
             # otherwise, wait for a new batch of messages
             else:
-                ircmsg = self.ircsock.recv(2048)
+                try:
+                    ircmsg = self.ircsock.recv(2048)
 
-                # empty string means closed socket, so exit
-                if not ircmsg:
-                    print(colored("*************************************", "red"))
-                    print(colored("SOCKET CLOSED", "red"))
-                    print(colored("*************************************", "red"))
-                    return
+                    # empty string means closed socket, so exit
+                    if not ircmsg:
+                        print(colored("*************************************", "red"))
+                        print(colored("SOCKET CLOSED", "red"))
+                        print(colored("*************************************", "red"))
+                        return
 
-                ircmsg = ircmsg.decode("latin-1").strip()
-                self.messageQueue.extend(ircmsg.split("\n"))
+                    ircmsg = ircmsg.decode("latin-1").strip()
+                    self.messageQueue.extend(ircmsg.split("\n"))
+                    numTimeouts = 0
+                except socket.timeout:
+                    numTimeouts += 1
+                    print(colored("*************************************", "red"))
+                    print(colored("TIMED OUT AFTER " + str(TIMEOUT_SECONDS) + " seconds (" + str(numTimeouts) + " times)", "red"))
+                    print(colored("*************************************", "red"))
+                    if numTimeouts >= 5:
+                        print(colored("Giving up and attempting to reconnect...", "red"))
+                        return
 
     def processLine(self, ircmsg):
         # pings are blue
