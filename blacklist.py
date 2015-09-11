@@ -2,14 +2,14 @@ import os
 import pickle
 from srlparser import Racer
 
-# defines a blacklist of racers for use by the FilteredRacer 
+# defines a blacklist of racers for use by the FilteredRacer
 class Blacklist:
-    
+
     def __init__(self, filename="blacklist"):
         self.filename = filename
         if os.path.exists(filename):
-            with open(filename, "rb") as blacklistFile:
-                self.races = pickle.load(blacklistFile)
+            with open(filename, "rb") as blacklist_file:
+                self.races = pickle.load(blacklist_file)
         else:
             self.races = set()
 
@@ -29,8 +29,8 @@ class Blacklist:
         self.save()
 
     def save(self):
-        with open(self.filename, "wb") as blacklistFile:
-            pickle.dump(self.races, blacklistFile)
+        with open(self.filename, "wb") as blacklist_file:
+            pickle.dump(self.races, blacklist_file)
 
 # defines a racer that filters from a blacklist
 class FilteredRacer(Racer):
@@ -41,5 +41,5 @@ class FilteredRacer(Racer):
 
     @property
     def results(self):
-        return [result for result in self.bingoResults if result.raceid not in self.blacklist]
-        
+        return [result for result in self.bingo_results if result.race_id not in self.blacklist]
+

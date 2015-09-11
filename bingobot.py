@@ -5,14 +5,14 @@ import os
 from collections import deque
 from datetime import datetime, timedelta
 from termcolor import colored, cprint
-from messages import Message, isMessage
+from messages import Message, is_message
 from srlparser import Racer, Result
 from blacklist import Blacklist
 from racercache import RacerCache, NameException
 
 TIMEOUT_SECONDS = 120
 
-def isPing(ircmsg):
+def is_ping(ircmsg):
     return "PING :" in ircmsg
 
 # users with !say and !command privelages, very dangerous
@@ -40,14 +40,14 @@ class BingoBot:
         self.server = server
         self.channels = channels
         self.commands = commands
-        self.messageQueue = deque()
+        self.message_queue = deque()
         self.blacklist = Blacklist(BLACKLIST_FILE)
-        self.racerCache = RacerCache(RACER_CACHE_FILE)
+        self.racer_cache = RacerCache(RACER_CACHE_FILE)
 
         # load from config files
         if os.path.exists(OPS_FILE):
-            with open(OPS_FILE, "rb") as opsFile:
-                self.ops = pickle.load(opsFile)
+            with open(OPS_FILE, "rb") as ops_file:
+                self.ops = pickle.load(ops_file)
         else:
             self.ops = set()
 
@@ -74,12 +74,12 @@ class BingoBot:
         self.send("PART " + chan + "\n")
 
     def listen(self):
-        numTimeouts = 0
+        num_timeouts = 0
         while True:
             # if messages are available, process them
-            if(len(self.messageQueue) > 0):
-                ircmsg = self.messageQueue.popleft()
-                self.processLine(ircmsg)
+            if(len(self.message_queue) > 0):
+                ircmsg = self.message_queue.popleft()
+                self.process_line(ircmsg)
             # otherwise, wait for a new batch of messages
             else:
                 try:
@@ -93,27 +93,27 @@ class BingoBot:
                         return
 
                     ircmsg = ircmsg.decode("latin-1").strip()
-                    self.messageQueue.extend(ircmsg.split("\n"))
-                    numTimeouts = 0
+                    self.message_queue.extend(ircmsg.split("\n"))
+                    num_timeouts = 0
                 except socket.timeout:
-                    numTimeouts += 1
+                    num_timeouts += 1
                     print(colored("*************************************", "red"))
-                    print(colored("TIMED OUT AFTER " + str(TIMEOUT_SECONDS) + " seconds (" + str(numTimeouts) + " times)", "red"))
+                    print(colored("TIMED OUT AFTER " + str(TIMEOUT_SECONDS) + " seconds (" + str(num_timeouts) + " times)", "red"))
                     print(colored("*************************************", "red"))
-                    if numTimeouts >= 5:
+                    if num_timeouts >= 5:
                         print(colored("Giving up and attempting to reconnect...", "red"))
                         return
 
-    def processLine(self, ircmsg):
+    def process_line(self, ircmsg):
         # pings are blue
-        if isPing(ircmsg):
+        if is_ping(ircmsg):
             print(colored(ircmsg, "blue"))
             pingmsg = ircmsg.split("PING :")[1]
             self.send("PONG :" + pingmsg + "\n")
         # chat messages are grey
-        elif isMessage(ircmsg):
+        elif is_message(ircmsg):
             print(ircmsg)
-            self.processMessage(ircmsg)
+            self.process_message(ircmsg)
         # if there's SOMETHING there
         elif len(ircmsg) > 0:
             print(colored(ircmsg, "green"))
@@ -131,7 +131,7 @@ class BingoBot:
             if "You are already identified." not in ircmsg:
                 self.sendmsg("NickServ", "IDENTIFY " + self.password)
 
-    def processMessage(self, ircmsg):
+    def process_message(self, ircmsg):
         msg = Message(ircmsg)
         # ignore anything from #speedrunslive to avoid flooding it accidentally
         if msg.channel == "#speedrunslive":
@@ -140,7 +140,7 @@ class BingoBot:
         # WARNING: the bot will not reconnect until manually reset
         elif msg.command in {"!kill", ".kill"}:
             print(colored("Kill request detected from " + msg.sender.lower(), "yellow"))
-            if self.hasOp(msg.sender):
+            if self.has_op(msg.sender):
                 # actually kills the bot if the sender is privelaged
                 self.send("QUIT Kill requested by " + msg.sender + "\n")
                 raise KillException
@@ -157,28 +157,28 @@ class BingoBot:
                     print(colored(traceback.format_exc(), "red"))
                     self.sendmsg(msg.channel, "Something weird happened...")
 
-    def getRacer(self, channel, username, refresh=False):
+    def get_racer(self, channel, username, refresh=False):
         if refresh:
-            self.racerCache.refresh(username, self, channel)
-        return self.racerCache.getOrLoad(username, self, channel)
+            self.racer_cache.refresh(username, self, channel)
+        return self.racer_cache.get_or_load(username, self, channel)
 
-    def hasAdmin(self, name):
+    def has_admin(self, name):
         return name.lower() in ADMINS
 
-    def hasOp(self, name):
-        return name.lower() in self.ops or self.hasAdmin(name)
+    def has_op(self, name):
+        return name.lower() in self.ops or self.has_admin(name)
 
-    def addOp(self, name):
+    def add_op(self, name):
         self.ops.add(name.lower())
-        self.saveOps()
+        self.save_ops()
 
-    def removeOp(self, name):
+    def remove_op(self, name):
         self.ops.remove(name.lower())
-        self.saveOps()
+        self.save_ops()
 
-    def saveOps(self):
-        with open(OPS_FILE, "wb") as opsFile:
-            pickle.dump(self.ops, opsFile)
+    def save_ops(self):
+        with open(OPS_FILE, "wb") as ops_file:
+            pickle.dump(self.ops, ops_file)
 
 
 

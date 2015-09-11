@@ -6,67 +6,67 @@ import pprint
 
 API_URL = "http://api.speedrunslive.com/"
 
-def loadJsonFromUrl(url):
-    jsonFile = urllib.request.urlopen(url)
-    jsonDict = json.loads(jsonFile.read().decode())
-    return jsonDict
+def load_json_from_url(url):
+    json_file = urllib.request.urlopen(url)
+    json_dict = json.loads(json_file.read().decode())
+    return json_dict
 
-bingoRegex = re.compile(".*speedrunslive.com/tools/oot-bingo/\?.*seed=[0-9]+")
+BINGO_URL_REGEX = re.compile(".*speedrunslive.com/tools/oot-bingo/\?.*seed=[0-9]+")
 
-def isBingoGoal(goal):
+def is_bingo_goal(goal):
     goal = goal.lower()
-    return bingoRegex.match(goal) and "short" not in goal and "blackout" not in goal
+    return BINGO_URL_REGEX.match(goal) and "short" not in goal and "blackout" not in goal
 
-def getStatsUrl(player):
+def get_stats_url(player):
     return API_URL + "stat?player=" + player
 
-def getNumberRaces(player):
-    statsJson = loadJsonFromUrl(getStatsUrl(player))
-    return statsJson["stats"]["totalRaces"]
+def get_number_races(player):
+    g = load_json_from_url(get_stats_url(player))
+    return g["stats"]["totalRaces"]
 
-def getResultsUrl(player, raceCount=-1):
-    if raceCount == -1:
-        raceCount = getNumberRaces(player)
-    return API_URL + "pastraces?player=" + player + "&pageSize=" + str(raceCount)
+def get_results_url(player, race_count=-1):
+    if race_count == -1:
+        race_count = get_number_races(player)
+    return API_URL + "pastraces?player=" + player + "&pageSize=" + str(race_count)
 
-def getRaceHistory(player, raceCount=-1):
-    resultsJson = loadJsonFromUrl(getResultsUrl(player, raceCount))
-    return resultsJson["pastraces"]
+def get_race_history(player, race_count=-1):
+    results_json = load_json_from_url(get_results_url(player, race_count))
+    return results_json["pastraces"]
 
 BINGO_V8_RELEASE = date(2013, 9, 11)
 
-def getBingosFrom(raceHistory):
-    bingoRaces = []
-    for race in raceHistory:
-        raceDate = date.fromtimestamp(float(race["date"]))
-        if isBingoGoal(race["goal"]) and raceDate > BINGO_V8_RELEASE:
-            bingoRaces.append(race)
-    return bingoRaces
+def get_bingos_from(race_history):
+    bingo_races = []
+    for race in race_history:
+        race_date = date.fromtimestamp(float(race["date"]))
+        if is_bingo_goal(race["goal"]) and race_date > BINGO_V8_RELEASE:
+            bingo_races.append(race)
+    return bingo_races
 
-def getResultsFrom(bingoRaces, player):
-    bingoResults = []
-    for race in bingoRaces:
-        for resultJson in race["results"]:
-            if resultJson["player"].lower() == player.lower():
-                resultJson["date"] = race["date"]
-                bingoResults.append(Result(resultJson))
-    return bingoResults
+def get_results_from(bingo_races, player):
+    bingo_results = []
+    for race in bingo_races:
+        for result_json in race["results"]:
+            if result_json["player"].lower() == player.lower():
+                result_json["date"] = race["date"]
+                bingo_results.append(Result(result_json))
+    return bingo_results
 
-def getAverageTime(times):
+def get_average_time(times):
     if len(times) > 0:
         return sum(times, timedelta(0)) / len(times)
     else:
         return 0
 
-def getRaceUrl(raceId):
-    return "http://www.speedrunslive.com/races/result/#!/" + str(raceId)
+def get_race_url(race_id):
+    return "http://www.speedrunslive.com/races/result/#!/" + str(race_id)
 
 class Result:
-    def __init__(self, resultJson):
-        self.raceid = resultJson["race"]
-        self.date = date.fromtimestamp(float(resultJson["date"]))
-        self.time = timedelta(seconds=resultJson["time"])
-        self.message = resultJson["message"]
+    def __init__(self, result_json):
+        self.race_id = result_json["race"]
+        self.date = date.fromtimestamp(float(result_json["date"]))
+        self.time = timedelta(seconds=result_json["time"])
+        self.message = result_json["message"]
 
     def __str__(self):
         return str(self.time)
@@ -74,53 +74,53 @@ class Result:
     def __lt__(self, result):
         return self.time < result.time
 
-    def isForfeit(self):
+    def is_forfeit(self):
         return self.time <= timedelta(0)
 
-    def apiUrl(self):
-        return API_URL + "pastraces?id=" + str(self.raceid)
+    def api_url(self):
+        return API_URL + "pastraces?id=" + str(self.race_id)
 
-    def raceUrl(self):
-        return getRaceUrl(self.raceid)
+    def race_url(self):
+        return get_race_url(self.race_id)
 
 class Racer:
     def __init__(self, username):
         self.username = username.strip()
-        raceHistory = getRaceHistory(self.username)
-        self.numLoadedRaces = len(raceHistory)
-        self.bingoResults = getResultsFrom(getBingosFrom(raceHistory), self.username)
+        race_history = get_race_history(self.username)
+        self.num_loaded_races = len(race_history)
+        self.bingo_results = get_results_from(get_bingos_from(race_history), self.username)
 
     def update(self):
-        numOutdated = getNumberRaces(self.username) - self.numLoadedRaces
-        if numOutdated > 0:
-            newRaces = getRaceHistory(self.username, numOutdated)
-            newBingoResults = getResultsFrom(getBingosFrom(newRaces), self.username)
-            self.bingoResults = newBingoResults + self.bingoResults
-            self.numLoadedRaces += numOutdated
+        num_outdated = get_number_races(self.username) - self.num_loaded_races
+        if num_outdated > 0:
+            new_races = get_race_history(self.username, num_outdated)
+            new_bingo_results = get_results_from(get_bingos_from(new_races), self.username)
+            self.bingo_results = new_bingo_results + self.bingo_results
+            self.num_loaded_races += num_outdated
 
     @property
     def results(self):
-        return self.bingoResults
+        return self.bingo_results
 
-    def validResults(self):
-        return [result for result in self.results if not result.isForfeit()]
+    def valid_results(self):
+        return [result for result in self.results if not result.is_forfeit()]
 
-    def validTimes(self):
-        return [result.time for result in self.validResults()]
+    def valid_times(self):
+        return [result.time for result in self.valid_results()]
 
-    def forfeitResults(self):
-        return [result for result in self.results if result.isForfeit()]
+    def forfeit_results(self):
+        return [result for result in self.results if result.is_forfeit()]
 
-    def completionRate(self):
-        return len(self.validResults()) / float(len(self.results))
+    def completion_rate(self):
+        return len(self.valid_results()) / float(len(self.results))
 
-    def averageTime(self, minTimes, maxTimes):
-        times = self.validTimes()[minTimes:maxTimes]
+    def average_time(self, min_times, max_times):
+        times = self.valid_times()[min_times:max_times]
 
         return sum(times, timedelta()) / len(times)
 
-    def medianTime(self, minTimes, maxTimes):
-        times = self.validTimes()[minTimes:maxTimes]
+    def median_time(self, min_times, max_times):
+        times = self.valid_times()[min_times:max_times]
 
         return sorted(times)[len(times) // 2]
 

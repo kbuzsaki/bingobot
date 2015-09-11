@@ -33,8 +33,8 @@ class RacerCache:
     def __init__(self, filename="racercache"):
         self.filename = filename
         if os.path.exists(filename):
-            with open(filename, "rb") as cacheFile:
-                self.entries = pickle.load(cacheFile)
+            with open(filename, "rb") as cache_file:
+                self.entries = pickle.load(cache_file)
         else:
             self.entries = dict()
 
@@ -62,7 +62,7 @@ class RacerCache:
         self.entries[username].update()
         self.save()
 
-    def getOrLoad(self, username, bot, channel):
+    def get_or_load(self, username, bot, channel):
         username = username.lower()
         if username not in self.entries:
             self.refresh(username, bot, channel)
@@ -73,8 +73,8 @@ class RacerCache:
         return self.entries[username].racer
 
     def save(self):
-        with open(self.filename, "wb") as cacheFile:
-            pickle.dump(self.entries, cacheFile)
+        with open(self.filename, "wb") as cache_file:
+            pickle.dump(self.entries, cache_file)
 
 
 

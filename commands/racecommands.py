@@ -8,23 +8,23 @@ from command import command
 SRL_BASE = "http://speedrunslive.com"
 BINGO_URL = SRL_BASE + "/tools/oot-bingo"
 
-def loadGenerator():
+def load_generator():
     # super hacky way to load the generator js from srl so it's not stored in the repo
-    pageText = urlopen(BINGO_URL).read().decode("utf-8").split()
-    jsUrlLine = [line for line in pageText if "bingo" in line and "script" in line][0]
-    jsUrl = jsUrlLine.split('"')[1]
+    page_text = urlopen(BINGO_URL).read().decode("utf-8").split()
+    js_url_line = [line for line in page_text if "bingo" in line and "script" in line][0]
+    js_url = js_url_line.split('"')[1]
 
     # srl stores the generator in strings and evals them on the page
     # so we need to add evals for the string variables
-    jsText = urlopen(SRL_BASE + jsUrl).read().decode("utf-8")
-    varNames = [line.split(" ")[1] for line in jsText.split("\n") if " " in line]
+    js_text = urlopen(SRL_BASE + js_url).read().decode("utf-8")
+    var_names = [line.split(" ")[1] for line in js_text.split("\n") if " " in line]
     # only the first 3 lines are actually used for the generator
     # the rest are for the ui and use jquery which we don't want to load
-    varNames = varNames[:3]
+    var_names = var_names[:3]
 
-    varEval = "\n".join("eval(" + varName + ");" for varName in varNames)
-    fullJs = jsText + varEval + "\n"
-    return BingoGenerator(fullJs)
+    var_eval = "\n".join("eval(" + var_name + ");" for var_name in var_names)
+    full_js = js_text + var_eval + "\n"
+    return BingoGenerator(full_js)
 
 
 class BingoGenerator:
@@ -37,17 +37,17 @@ class BingoGenerator:
     @staticmethod
     def instance():
         if not BingoGenerator.CACHED_INSTANCE:
-            BingoGenerator.CACHED_INSTANCE = loadGenerator()
+            BingoGenerator.CACHED_INSTANCE = load_generator()
         return BingoGenerator.CACHED_INSTANCE
 
     @staticmethod
     def reload():
-        BingoGenerator.CACHED_INSTANCE = loadGenerator()
+        BingoGenerator.CACHED_INSTANCE = load_generator()
 
-    def __init__(self, generatorJs):
-        self.context = execjs.get("Node").compile(generatorJs)
+    def __init__(self, generator_js):
+        self.context = execjs.get("Node").compile(generator_js)
 
-    def getCard(self, seed=None):
+    def get_card(self, seed=None):
         if seed is not None:
             opts = "{ seed: " + str(seed) + " }"
         else:
@@ -60,16 +60,16 @@ class BingoGenerator:
 
         return card
 
-    def getBlackoutCard(self, teamSize=3):
+    def get_blackout_card(self, team_size=3):
         # just try to generate a bunch of cards
         # if we fail too many times, abort
         for attempt in range(100):
             seed = random.randint(0, 1000000)
             print(colored("trying seed: " + str(seed), "yellow"))
-            card = self.getCard(seed)
-            if isBlackoutCard(card, teamSize):
+            card = self.get_card(seed)
+            if is_blackout_card(card, team_size):
                 return seed, card
-        raise Exception("Failed to generate card for teamsize: " + str(teamSize))
+        raise Exception("Failed to generate card for teamsize: " + str(team_size))
 
 # list of groups goals which cannot be completed on the same file
 # prevent more of these from being on a card than their are players
@@ -220,29 +220,29 @@ OVERLAP_GOALS_LIST = [
     ]
 ]
 
-def getInstanceCount(card, goals):
+def get_instance_count(card, goals):
     return len([goal for goal in card if goal in goals])
 
-def isBlackoutCard(card, teamSize=3):
+def is_blackout_card(card, team_size=3):
     names = [goal["name"] for goal in card]
 
     # no duplicates allowed
     if len(names) != len(set(names)):
         return False
 
-    for exclusiveGoals in EXCLUSIVE_GOALS_LIST:
-        count = getInstanceCount(names, exclusiveGoals)
-        if count > teamSize:
+    for exclusive_goals in EXCLUSIVE_GOALS_LIST:
+        count = get_instance_count(names, exclusive_goals)
+        if count > team_size:
             return False
 
-    for overlapGoals in OVERLAP_GOALS_LIST:
-        count = getInstanceCount(names, overlapGoals)
+    for overlap_goals in OVERLAP_GOALS_LIST:
+        count = get_instance_count(names, overlap_goals)
         if count > 1:
             return False
 
     return True
 
-def getCardUrl(seed):
+def get_card_url(seed):
     return SRL_BASE + "/tools/oot-bingo/?seed=" + str(seed)
 
 @command("blackoutcard")
@@ -251,11 +251,11 @@ def generateBlackoutCard(bot, msg):
         bot.sendmsg(msg.channel, "Loading Bingo Generator...")
     generator = BingoGenerator.instance()
 
-    seed, card = generator.getBlackoutCard()
-    bot.sendmsg(msg.channel, getCardUrl(seed))
+    seed, card = generator.get_blackout_card()
+    bot.sendmsg(msg.channel, get_card_url(seed))
 
 @command("reloadgenerator")
-def reloadGenerator(bot, msg):
+def reload_generator(bot, msg):
     bot.sendmsg(msg.channel, "Loading Bingo Generator...")
     BingoGenerator.reload()
     bot.sendmsg(msg.channel, "Generator reloaded.")

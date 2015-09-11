@@ -1,8 +1,8 @@
 import re
-from srlparser import getRaceUrl
+from srlparser import get_race_url
 from command import command
 
-channelPattern = re.compile("^#.+$")
+CHANNEL_PATTERN = re.compile("^#.+$")
 
 def hello(bot, msg):
     if msg.contains("Hello " + bot.nick) or msg.contains("Hi " + bot.nick):
@@ -13,28 +13,28 @@ def hello(bot, msg):
 
 @command("say")
 def say(bot, msg):
-    if bot.hasAdmin(msg.sender):
-        if channelPattern.match(msg.arguments[0]):
+    if bot.has_admin(msg.sender):
+        if CHANNEL_PATTERN.match(msg.arguments[0]):
             bot.sendmsg(msg.arguments[0], " ".join(msg.arguments[1:]))
         else:
             bot.sendmsg(msg.channel, " ".join(msg.arguments))
 
 @command("command")
-def botCommand(bot, msg):
-    if bot.hasAdmin(msg.sender):
+def bot_command(bot, msg):
+    if bot.has_admin(msg.sender):
         bot.send(" ".join(msg.arguments) + "\n")
 
 @command("clear")
 def clear(bot, msg):
-    if bot.hasAdmin(msg.sender):
-        bot.racerCache.clear()
+    if bot.has_admin(msg.sender):
+        bot.racer_cache.clear()
         bot.sendmsg(msg.channel, "Cache cleared.")
 
 # don't allow .join because that conflicts with racebot
 @command(exacts=["!join"])
 def join(bot, msg):
     for argument in msg.arguments:
-        if channelPattern.match(argument):
+        if CHANNEL_PATTERN.match(argument):
             bot.sendmsg(msg.channel, "Joining " + argument + "...")
             bot.joinchan(argument)
         else:
@@ -52,25 +52,25 @@ def leave(bot, msg):
 # op commands
 @command("op")
 def op(bot, msg):
-    if bot.hasOp(msg.sender):
+    if bot.has_op(msg.sender):
         username = msg.usernames[0]
-        if bot.hasOp(username):
+        if bot.has_op(username):
             message = username + " is already an op."
         else:
-            bot.addOp(username)
+            bot.add_op(username)
             message = username + " has been opped."
         bot.sendmsg(msg.channel, message)
 
 @command("deop")
 def deop(bot, msg):
-    if bot.hasOp(msg.sender):
+    if bot.has_op(msg.sender):
         username = msg.usernames[0]
-        if bot.hasAdmin(username):
+        if bot.has_admin(username):
             message = username + " cannot be deopped."
-        elif not bot.hasOp(username):
+        elif not bot.has_op(username):
             message = username + " is not an op."
         else:
-            bot.removeOp(username)
+            bot.remove_op(username)
             message = username + " has been deopped."
         bot.sendmsg(msg.channel, message)
 
@@ -82,34 +82,34 @@ def ops(bot, msg):
 # blacklist commands
 @command("blacklist")
 def blacklist(bot, msg):
-    if bot.hasOp(msg.sender):
-        raceId = msg.numbers[0]
-        if raceId in bot.blacklist:
-            message = "Race " + str(raceId) + " is already blacklisted."
+    if bot.has_op(msg.sender):
+        race_id = msg.numbers[0]
+        if race_id in bot.blacklist:
+            message = "Race " + str(race_id) + " is already blacklisted."
         else:
-            bot.blacklist.add(raceId)
-            message = "Race " + str(raceId) + " has been blacklisted."
+            bot.blacklist.add(race_id)
+            message = "Race " + str(race_id) + " has been blacklisted."
         bot.sendmsg(msg.channel, message)
 
 @command("unblacklist")
 def unblacklist(bot, msg):
-    if bot.hasOp(msg.sender):
-        raceId = msg.numbers[0]
-        if raceId not in bot.blacklist:
-            message = "Race " + str(raceId) + " is not blacklisted."
+    if bot.has_op(msg.sender):
+        race_id = msg.numbers[0]
+        if race_id not in bot.blacklist:
+            message = "Race " + str(race_id) + " is not blacklisted."
         else:
-            bot.blacklist.remove(raceId)
-            message = "Race " + str(raceId) + " has been unblacklisted."
+            bot.blacklist.remove(race_id)
+            message = "Race " + str(race_id) + " has been unblacklisted."
         bot.sendmsg(msg.channel, message)
 
 @command("blacklisted")
 def blacklisted(bot, msg):
     if msg.detailed:
         message = "Blacklisted Races:\n"
-        message += "\n".join([getRaceUrl(raceId) for raceId in bot.blacklist])
+        message += "\n".join([get_race_url(race_id) for race_id in bot.blacklist])
     else:
         message = "Blacklisted Races: "
-        message += ", ".join([str(raceId) for raceId in bot.blacklist])
+        message += ", ".join([str(race_id) for race_id in bot.blacklist])
     bot.sendmsg(msg.channel, message)
 
 # op help commands
