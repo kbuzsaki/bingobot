@@ -1,12 +1,13 @@
 from datetime import timedelta
-from commands.basiccommands import format_time
+
 from command import command
+from commands.basiccommands import format_time
 
 NUMBERS = "one two three four five six seven eight nine ten eleven twelve".split()
 
 def get_patterns(patterns_filename):
     with open(patterns_filename) as patterns_file:
-       return [get_pattern(line.strip()) for line in patterns_file]
+        return [get_pattern(line.strip()) for line in patterns_file]
 
 def get_pattern(line):
     return [int(digit, 16) for digit in line]
@@ -30,7 +31,9 @@ def mult_delta(delta, factor):
 def chunk_list(elements, step=3):
     chunks = len(elements) // step
     for index in range(chunks):
-        yield elements[index * step : (index + 1) * step]
+        begin = index * step
+        end = (index + 1) * step
+        yield elements[begin:end]
 
 def variance(elements):
     mean = sum(elements) / len(elements)
@@ -156,8 +159,8 @@ def fast_balance(bot, msg):
     num_teams = len(participants) // 3
 
     tier_one = participants[:num_teams]
-    tier_two = participants[num_teams:num_teams*2]
-    tier_three = participants[num_teams*2:]
+    tier_two = participants[num_teams:num_teams * 2]
+    tier_three = participants[num_teams * 2:]
 
     teams = []
 
@@ -165,7 +168,7 @@ def fast_balance(bot, msg):
     for player_index in range(num_teams):
         teams.append([tier_one[player_index], tier_two[-player_index - 1]])
 
-    #sorts the resulting teams with highest work rates at the top
+    # sorts the resulting teams with highest work rates at the top
     team_rate = lambda team: team[0].work_rate + team[1].work_rate
     teams = sorted(teams, key=team_rate, reverse=True)
 

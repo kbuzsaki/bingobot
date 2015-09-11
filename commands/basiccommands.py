@@ -1,4 +1,3 @@
-from datetime import timedelta
 from command import command
 
 # helper method for bot
@@ -128,7 +127,7 @@ def bingo_bot_pls(msg):
 def help(bot, msg):
     search = msg.arguments[0] if len(msg.arguments) > 0 else None
 
-    if search == None or bingo_bot_pls(msg.text):
+    if search is None or bingo_bot_pls(msg.text):
         message = "Commands: !racer, !results, !best, !worst, !lookup, !average, "
         message += "!median, !teamtime, !balance, !join, !leave, !about.\n"
         message += "Run !help <command> to get detailed help for a command."

@@ -1,6 +1,7 @@
 import re
-from srlparser import get_race_url
+
 from command import command
+from srlparser import get_race_url
 
 CHANNEL_PATTERN = re.compile("^#.+$")
 
@@ -119,7 +120,7 @@ NAME = "RacerName"
 def ophelp(bot, msg):
     search = msg.arguments[0] if len(msg.arguments) > 0 else None
 
-    if search == None:
+    if search is None:
         message = "Operator Commands: !op, !deop, !blacklist, !unblacklist, !kill\n"
         message += "Run !ophelp <command> to get detailed help for a command."
     elif "deop" in search:

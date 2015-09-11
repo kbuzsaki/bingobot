@@ -1,5 +1,5 @@
-import re
 from datetime import timedelta
+import re
 
 def is_message(ircmsg):
     return "PRIVMSG" in ircmsg

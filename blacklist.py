@@ -1,5 +1,6 @@
 import os
 import pickle
+
 from srlparser import Racer
 
 # defines a blacklist of racers for use by the FilteredRacer

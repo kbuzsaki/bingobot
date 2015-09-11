@@ -24,4 +24,3 @@ def command(*commands, exacts=set(), predicates=set()):
 
 command.loaded_commands = []
 
-

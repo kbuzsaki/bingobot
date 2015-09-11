@@ -1,7 +1,7 @@
+from datetime import datetime, timedelta
 import os
 import pickle
-from datetime import datetime, timedelta
-from srlparser import Racer
+
 from blacklist import FilteredRacer
 
 TIME_THRESHOLD = timedelta(hours=1)

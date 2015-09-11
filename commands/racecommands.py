@@ -1,8 +1,8 @@
-from urllib.request import urlopen
-import execjs
-import json
 import random
+from urllib.request import urlopen
+
 from command import command
+import execjs
 from logger import logger
 
 SRL_BASE = "http://speedrunslive.com"

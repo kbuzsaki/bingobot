@@ -1,14 +1,12 @@
-import traceback
-import pickle
 import os
-from ircconn import DeadSocketException
-from collections import deque
-from datetime import datetime, timedelta
-from logger import logger
-from messages import Message, is_message
-from srlparser import Racer, Result
+import pickle
+import traceback
+
 from blacklist import Blacklist
-from racercache import RacerCache, NameException
+from ircconn import DeadSocketException
+from logger import logger
+from messages import is_message, Message
+from racercache import NameException, RacerCache
 
 def is_ping(ircmsg):
     return "PING :" in ircmsg

@@ -1,5 +1,5 @@
-import socket
 from collections import deque
+import socket
 
 DEFAULT_PORT = 6667
 DEFAULT_TIMEOUT = 120

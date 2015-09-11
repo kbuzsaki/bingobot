@@ -1,13 +1,13 @@
-import time
-import traceback
 from datetime import datetime, timedelta
-from bingobot import BingoBot
-from ircconn import IrcConnection
-from logger import logger
 import glob
 import importlib
+import time
+import traceback
 
+from bingobot import BingoBot
 import command
+from ircconn import IrcConnection
+from logger import logger
 
 TWO_MINUTES = timedelta(minutes=2)
 
@@ -15,7 +15,8 @@ RETRY_INTERVAL = timedelta(minutes=1)
 
 server = "irc2.speedrunslive.com"
 channels = ["#bingoleague", "#speedrunslive"]
-nick = "BingoBot"
+channels = ["#test"]
+nick = "TestBingoBot"
 password = ""
 
 loaded_modules = []
@@ -36,7 +37,7 @@ with open("data/password", "r") as password_file:
 
 
 connection = IrcConnection(nick, server)
-bingo_bot = BingoBot(nick, password, connection, channels, commands = all_commands)
+bingo_bot = BingoBot(nick, password, connection, channels, commands=all_commands)
 
 last_connection = datetime(year=1999, month=1, day=1)
 

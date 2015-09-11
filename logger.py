@@ -1,11 +1,13 @@
-from termcolor import colored
 from datetime import datetime
+
+from termcolor import colored
 
 ERROR_COLOR = "red"
 DEBUG_COLOR = "yellow"
 INCOMING_INFO_COLOR = "green"
 INCOMING_PING_COLOR = "blue"
 OUTGOING_COLOR = "magenta"
+
 
 class Logger:
     """Basic colorizing logger. Prints to terminal by default."""
@@ -29,7 +31,7 @@ class Logger:
     def incoming_ping(self, message):
         self._log(message, INCOMING_PING_COLOR)
 
-    def outgoing(self,message):
+    def outgoing(self, message):
         self._log(message, OUTGOING_COLOR)
 
 logger = Logger()
