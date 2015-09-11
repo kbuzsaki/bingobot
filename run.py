@@ -3,6 +3,7 @@ import traceback
 from datetime import datetime, timedelta
 from termcolor import colored
 from bingobot import BingoBot
+from ircconn import IrcConnection
 import glob
 import importlib
 
@@ -14,7 +15,7 @@ RETRY_INTERVAL = timedelta(minutes=1)
 
 server = "irc2.speedrunslive.com"
 channels = ["#bingoleague", "#speedrunslive"]
-botnick = "BingoBot"
+nick = "BingoBot"
 password = ""
 
 loaded_modules = []
@@ -33,7 +34,9 @@ all_commands = load_commands()
 with open("data/password", "r") as password_file:
     password = password_file.readline()
 
-bingo_bot = BingoBot(botnick, password, server, channels, commands = all_commands)
+
+connection = IrcConnection(nick, server)
+bingo_bot = BingoBot(nick, password, connection, channels, commands = all_commands)
 
 last_connection = datetime(year=1999, month=1, day=1)
 

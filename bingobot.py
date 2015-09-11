@@ -1,7 +1,7 @@
-import socket
 import traceback
 import pickle
 import os
+from ircconn import DeadSocketException
 from collections import deque
 from datetime import datetime, timedelta
 from termcolor import colored, cprint
@@ -10,13 +10,11 @@ from srlparser import Racer, Result
 from blacklist import Blacklist
 from racercache import RacerCache, NameException
 
-TIMEOUT_SECONDS = 120
-
 def is_ping(ircmsg):
     return "PING :" in ircmsg
 
 # users with !say and !command privelages, very dangerous
-ADMINS = ["saltor", "saltor_"]
+ADMINS = ["saltor", "saltor_", "kbuzsaki"]
 
 # ops file name
 # has names of users who can !kill and !blacklist
@@ -34,13 +32,12 @@ class KillException(Exception):
 
 class BingoBot:
 
-    def __init__(self, nick, password, server, channels=[], commands=[]):
+    def __init__(self, nick, password, connection, channels=[], commands=[]):
         self.nick = nick
         self.password = password
-        self.server = server
+        self.connection = connection
         self.channels = channels
         self.commands = commands
-        self.message_queue = deque()
         self.blacklist = Blacklist(BLACKLIST_FILE)
         self.racer_cache = RacerCache(RACER_CACHE_FILE)
 
@@ -54,14 +51,10 @@ class BingoBot:
     def send(self, s):
         now = str(datetime.now())
         print(colored(now + " - OUTGOING: " + s.strip(), "magenta"))
-        self.ircsock.send(s.encode("latin-1"))
+        self.connection.send(s)
 
     def connect(self):
-        self.ircsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.ircsock.settimeout(TIMEOUT_SECONDS)
-        self.ircsock.connect((self.server, 6667))
-        self.send("USER " + self.nick + " " + self.nick + " " + self.nick + " :BingoBot yo\n")
-        self.send("NICK " + self.nick + "\n")
+        self.connection.connect()
 
     def sendmsg(self, chan, msg):
         for line in msg.strip().split("\n"):
@@ -74,35 +67,14 @@ class BingoBot:
         self.send("PART " + chan + "\n")
 
     def listen(self):
-        num_timeouts = 0
         while True:
-            # if messages are available, process them
-            if(len(self.message_queue) > 0):
-                ircmsg = self.message_queue.popleft()
-                self.process_line(ircmsg)
-            # otherwise, wait for a new batch of messages
-            else:
-                try:
-                    ircmsg = self.ircsock.recv(2048)
-
-                    # empty string means closed socket, so exit
-                    if not ircmsg:
-                        print(colored("*************************************", "red"))
-                        print(colored("SOCKET CLOSED", "red"))
-                        print(colored("*************************************", "red"))
-                        return
-
-                    ircmsg = ircmsg.decode("latin-1").strip()
-                    self.message_queue.extend(ircmsg.split("\n"))
-                    num_timeouts = 0
-                except socket.timeout:
-                    num_timeouts += 1
-                    print(colored("*************************************", "red"))
-                    print(colored("TIMED OUT AFTER " + str(TIMEOUT_SECONDS) + " seconds (" + str(num_timeouts) + " times)", "red"))
-                    print(colored("*************************************", "red"))
-                    if num_timeouts >= 5:
-                        print(colored("Giving up and attempting to reconnect...", "red"))
-                        return
+            try:
+                next_line = self.connection.read_line()
+                self.process_line(next_line)
+            except DeadSocketException as e:
+                print(colored("*************************************", "red"))
+                print(colored(str(e), "red"))
+                print(colored("*************************************", "red"))
 
     def process_line(self, ircmsg):
         # pings are blue
@@ -115,12 +87,8 @@ class BingoBot:
             print(ircmsg)
             self.process_message(ircmsg)
         # if there's SOMETHING there
-        elif len(ircmsg) > 0:
-            print(colored(ircmsg, "green"))
-        # else, must be disconnected
         else:
-            print(colored("Disconnected from server?", "yellow"))
-            return
+            print(colored(ircmsg, "green"))
 
         # weird hack thing for joining channels?
         if "End of /MOTD" in ircmsg:
