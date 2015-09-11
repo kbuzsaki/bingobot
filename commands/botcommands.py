@@ -1,30 +1,12 @@
 import re
 from srlparser import getRaceUrl
+from command import command
 
 channelPattern = re.compile("^#.+$")
 
 def hello(bot, msg):
     if msg.contains("Hello " + bot.nick) or msg.contains("Hi " + bot.nick):
         bot.sendmsg(msg.channel, "Hello, " + msg.sender + "!")
-
-# command decorator
-# only invokes the function if msg.command is one of the
-# provided commands, or if one of the predicates is met.
-def command(*commands, exacts=set(), predicates=set()):
-    mod_commands = {"!" + cmd for cmd in commands} 
-    mod_commands |= {"." + cmd for cmd in commands}
-    mod_commands |= set(exacts)
-
-    def decorator(func):
-        def replacement(bot, msg):
-            command_match = msg.command in mod_commands
-            predicate_match = any(predicate(msg) for predicate in predicates)
-
-            if command_match or predicate_match:
-                func(bot, msg)
-        return replacement
-
-    return decorator
 
 
 # built in commands
@@ -47,7 +29,7 @@ def clear(bot, msg):
     if bot.hasAdmin(msg.sender):
         bot.racerCache.clear()
         bot.sendmsg(msg.channel, "Cache cleared.")
-            
+
 # don't allow .join because that conflicts with racebot
 @command(exacts=["!join"])
 def join(bot, msg):
@@ -56,8 +38,8 @@ def join(bot, msg):
             bot.sendmsg(msg.channel, "Joining " + argument + "...")
             bot.joinchan(argument)
         else:
-            bot.sendmsg(msg.channel, "Is \"" + argument + "\" a channel?") 
-        
+            bot.sendmsg(msg.channel, "Is \"" + argument + "\" a channel?")
+
 @command("leave")
 def leave(bot, msg):
     if msg.channel != "#bingoleague":
@@ -94,10 +76,10 @@ def deop(bot, msg):
 
 @command("ops")
 def ops(bot, msg):
-    message = "Bot Ops: " + ", ".join(bot.ops) 
+    message = "Bot Ops: " + ", ".join(bot.ops)
     bot.sendmsg(msg.channel, message)
 
-# blacklist commands 
+# blacklist commands
 @command("blacklist")
 def blacklist(bot, msg):
     if bot.hasOp(msg.sender):
@@ -126,8 +108,8 @@ def blacklisted(bot, msg):
         message = "Blacklisted Races:\n"
         message += "\n".join([getRaceUrl(raceId) for raceId in bot.blacklist])
     else:
-        message = "Blacklisted Races: " 
-        message += ", ".join([str(raceId) for raceId in bot.blacklist]) 
+        message = "Blacklisted Races: "
+        message += ", ".join([str(raceId) for raceId in bot.blacklist])
     bot.sendmsg(msg.channel, message)
 
 # op help commands
@@ -163,10 +145,3 @@ def ophelp(bot, msg):
 
     bot.sendmsg(msg.channel, message)
 
-adminCommands = [say, botCommand, clear]
-opCommands = [op, deop, blacklist, unblacklist]
-otherCommands = [hello, join, leave, ops, blacklisted, ophelp]
-builtinCommands = adminCommands + opCommands + otherCommands
-
-# end built in commands
-             

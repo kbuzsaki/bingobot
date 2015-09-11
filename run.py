@@ -3,9 +3,10 @@ import traceback
 from datetime import datetime, timedelta
 from termcolor import colored
 from bingobot import BingoBot
-import basiccommands
-import teamcommands
-import racecommands
+import glob
+import importlib
+
+import command
 
 TWO_MINUTES = timedelta(minutes=2)
 
@@ -15,7 +16,19 @@ server = "irc2.speedrunslive.com"
 channels = ["#bingoleague", "#speedrunslive"]
 botnick = "BingoBot"
 password = ""
-allCommands = basiccommands.allCommands + teamcommands.allCommands + racecommands.allCommands
+
+loaded_modules = []
+
+def loadCommands(path="./commands"):
+    for module_path in glob.glob("commands/*.py"):
+        # hackily get the actual name of the module (the * here)
+        module_name = "commands." + module_path[9:-3]
+        module = importlib.import_module(module_name)
+        loaded_modules.append(module)
+
+    return command.command.loaded_commands
+
+allCommands = loadCommands()
 
 with open("data/password", "r") as passwordFile:
     password = passwordFile.readline()

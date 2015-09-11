@@ -1,7 +1,7 @@
 from datetime import timedelta
 from termcolor import colored
-from basiccommands import formatTime
-from botcommands import command
+from commands.basiccommands import formatTime
+from command import command
 
 NUMBERS = "one two three four five six seven eight nine ten eleven twelve".split()
 
@@ -180,5 +180,3 @@ def fastBalance(bot, msg):
         message += "\" (" + formatTime(getTeamTime(team)) + ")\n"
     bot.sendmsg(msg.channel, message)
 
-
-allCommands = [teamTime, balance, fastBalance]

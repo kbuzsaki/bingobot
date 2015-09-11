@@ -1,6 +1,6 @@
 from datetime import timedelta
 from termcolor import colored
-from botcommands import command
+from command import command
 
 # helper method for bot
 
@@ -72,7 +72,7 @@ def medianTime(bot, msg):
     medianTime = racer.medianTime(msg.minimum, msg.maximum)
     resultsUsed = min(msg.maximum - msg.minimum, len(racer.validResults()))
 
-    message = "Median time from " + msg.username + "'s last " 
+    message = "Median time from " + msg.username + "'s last "
     message += str(resultsUsed) + " bingos: " + formatTime(medianTime)
     bot.sendmsg(msg.channel, message)
 
@@ -119,7 +119,7 @@ NAME = "RacerName"
 RANGE_MESSAGE = "Optionally, you can specify a maximum number of races or range of races to use. "
 REFRESH_MESSAGE = "Add \"refresh\" to force reload race data. "
 DETAILED_MESSAGE = "Add \"detailed\" to get race dates and urls. "
-EXACT_TIMES_MESSAGE = "Alternatively, you can supply exact times to use in the calculation. " 
+EXACT_TIMES_MESSAGE = "Alternatively, you can supply exact times to use in the calculation. "
 
 def bingoBotPls(msg):
     text = msg.text.lower()
@@ -208,10 +208,4 @@ def about(bot, msg):
     message = "Version 0.7\n"
     message += "Created by Saltor. !teamtime algorithm by Gombill."
     bot.sendmsg(msg.channel, message)
-
-queryCommands = [racerStats, lookupRace]
-listCommands = [pastTimes, rankPlayers, bestTime, worstTime]
-calculationCommands = [averageTime, medianTime]
-metaCommands = [help, about]
-allCommands = queryCommands + listCommands + calculationCommands + metaCommands    
 

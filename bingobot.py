@@ -7,7 +7,6 @@ from datetime import datetime, timedelta
 from termcolor import colored, cprint
 from messages import Message, isMessage
 from srlparser import Racer, Result
-from botcommands import builtinCommands
 from blacklist import Blacklist
 from racercache import RacerCache, NameException
 
@@ -40,7 +39,7 @@ class BingoBot:
         self.password = password
         self.server = server
         self.channels = channels
-        self.commands = builtinCommands + commands
+        self.commands = commands
         self.messageQueue = deque()
         self.blacklist = Blacklist(BLACKLIST_FILE)
         self.racerCache = RacerCache(RACER_CACHE_FILE)

@@ -3,7 +3,7 @@ import execjs
 import json
 import random
 from termcolor import colored
-from botcommands import command
+from command import command
 
 SRL_BASE = "http://speedrunslive.com"
 BINGO_URL = SRL_BASE + "/tools/oot-bingo"
@@ -259,7 +259,4 @@ def reloadGenerator(bot, msg):
     bot.sendmsg(msg.channel, "Loading Bingo Generator...")
     BingoGenerator.reload()
     bot.sendmsg(msg.channel, "Generator reloaded.")
-
-
-allCommands = [generateBlackoutCard, reloadGenerator]
 
