@@ -4,7 +4,7 @@ import os
 from ircconn import DeadSocketException
 from collections import deque
 from datetime import datetime, timedelta
-from termcolor import colored, cprint
+from logger import logger
 from messages import Message, is_message
 from srlparser import Racer, Result
 from blacklist import Blacklist
@@ -49,8 +49,7 @@ class BingoBot:
             self.ops = set()
 
     def send(self, s):
-        now = str(datetime.now())
-        print(colored(now + " - OUTGOING: " + s.strip(), "magenta"))
+        logger.outgoing("OUTGOING: " + s.strip())
         self.connection.send(s)
 
     def connect(self):
@@ -72,23 +71,18 @@ class BingoBot:
                 next_line = self.connection.read_line()
                 self.process_line(next_line)
             except DeadSocketException as e:
-                print(colored("*************************************", "red"))
-                print(colored(str(e), "red"))
-                print(colored("*************************************", "red"))
+                logger.error(str(e))
 
     def process_line(self, ircmsg):
-        # pings are blue
         if is_ping(ircmsg):
-            print(colored(ircmsg, "blue"))
+            logger.incoming_ping(ircmsg)
             pingmsg = ircmsg.split("PING :")[1]
             self.send("PONG :" + pingmsg + "\n")
-        # chat messages are grey
         elif is_message(ircmsg):
-            print(ircmsg)
+            logger.log(ircmsg)
             self.process_message(ircmsg)
-        # if there's SOMETHING there
         else:
-            print(colored(ircmsg, "green"))
+            logger.incoming_info(ircmsg)
 
         # weird hack thing for joining channels?
         if "End of /MOTD" in ircmsg:
@@ -107,7 +101,7 @@ class BingoBot:
         # kill command to force disconnect the bot from the server
         # WARNING: the bot will not reconnect until manually reset
         elif msg.command in {"!kill", ".kill"}:
-            print(colored("Kill request detected from " + msg.sender.lower(), "yellow"))
+            logger.debug("Kill request detected from " + msg.sender.lower())
             if self.has_op(msg.sender):
                 # actually kills the bot if the sender is privelaged
                 self.send("QUIT Kill requested by " + msg.sender + "\n")
@@ -117,12 +111,12 @@ class BingoBot:
                 try:
                     command(self, msg)
                 except NameException as e:
-                    print(colored(traceback.format_exc(), "red"))
+                    logger.error(traceback.format_exc())
                     message = "There was a problem looking up data for " + str(e) + ". "
                     message += "Do they have an SRL profile?"
                     self.sendmsg(msg.channel, message)
                 except Exception as e:
-                    print(colored(traceback.format_exc(), "red"))
+                    logger.error(traceback.format_exc())
                     self.sendmsg(msg.channel, "Something weird happened...")
 
     def get_racer(self, channel, username, refresh=False):

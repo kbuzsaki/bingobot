@@ -1,5 +1,4 @@
 from datetime import timedelta
-from termcolor import colored
 from commands.basiccommands import format_time
 from command import command
 

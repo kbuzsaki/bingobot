@@ -1,9 +1,9 @@
 import time
 import traceback
 from datetime import datetime, timedelta
-from termcolor import colored
 from bingobot import BingoBot
 from ircconn import IrcConnection
+from logger import logger
 import glob
 import importlib
 
@@ -49,12 +49,12 @@ while True:
     last_connection = datetime.now()
 
     try:
-        print("Connecting to server...")
+        logger.log("Connecting to server...")
         bingo_bot.connect()
         bingo_bot.listen()
     except Exception as e:
-        print(colored("Encountered exception while running:", "red"))
-        print(colored(traceback.format_exc(), "red"))
-        print(colored("Will retry within 60 seconds...", "red"))
+        logger.error("Encountered exception while running:")
+        logger.error(traceback.format_exc())
+        logger.error("Will retry within 60 seconds...")
 
 

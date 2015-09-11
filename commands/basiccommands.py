@@ -1,5 +1,4 @@
 from datetime import timedelta
-from termcolor import colored
 from command import command
 
 # helper method for bot

@@ -2,7 +2,6 @@ import json
 import urllib.request, urllib.parse, urllib.error
 import re
 from datetime import date, timedelta
-import pprint
 
 API_URL = "http://api.speedrunslive.com/"
 
