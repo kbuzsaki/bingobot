@@ -120,7 +120,7 @@ DETAILED_MESSAGE = "Add \"detailed\" to get race dates and urls. "
 EXACT_TIMES_MESSAGE = "Alternatively, you can supply exact times to use in the calculation. "
 
 def bingo_bot_pls(msg):
-    text = msg.text.lower()
+    text = msg.lower() if isinstance(msg, str) else msg.text.lower()
     return "bingobot pls" in text or "bingobot plz" in text or "bingobot please" in text
 
 @command("help", predicates=[bingo_bot_pls])
