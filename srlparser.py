@@ -12,9 +12,11 @@ def load_json_from_url(url):
 
 BINGO_URL_BASE = "speedrunslive.com/tools/oot-bingo/"
 
+BLACKLISTED_GOAL_WORDS = ["short", "blackout", "double"]
+
 def is_bingo_goal(goal):
     goal = goal.lower()
-    return BINGO_URL_BASE in goal and "short" not in goal and "blackout" not in goal
+    return BINGO_URL_BASE in goal and not any(word in goal for word in BLACKLISTED_GOAL_WORDS)
 
 def get_stats_url(player):
     return API_URL + "stat?player=" + player
