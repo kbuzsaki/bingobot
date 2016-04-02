@@ -10,11 +10,11 @@ def load_json_from_url(url):
     json_dict = json.loads(json_file.read().decode())
     return json_dict
 
-BINGO_URL_REGEX = re.compile(".*speedrunslive.com/tools/oot-bingo/\?.*seed=[0-9]+")
+BINGO_URL_BASE = "speedrunslive.com/tools/oot-bingo/"
 
 def is_bingo_goal(goal):
     goal = goal.lower()
-    return BINGO_URL_REGEX.match(goal) and "short" not in goal and "blackout" not in goal
+    return BINGO_URL_BASE in goal and "short" not in goal and "blackout" not in goal
 
 def get_stats_url(player):
     return API_URL + "stat?player=" + player
