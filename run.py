@@ -1,13 +1,14 @@
 from datetime import datetime, timedelta
 import glob
 import importlib
+import sys
 import time
 import traceback
 
-from bingobot import BingoBot
+from bingobot import BingoBot, KillException
 import command
-from ircconn import IrcConnection
-from logger import logger
+from ircconn import ConsoleIrcConnection, IrcConnection
+from logger import logger, Priority
 
 TWO_MINUTES = timedelta(minutes=2)
 
@@ -35,8 +36,12 @@ all_commands = load_commands()
 with open("data/password", "r") as password_file:
     password = password_file.readline()
 
+if "--cli" in sys.argv:
+    connection = ConsoleIrcConnection(nick, server)
+    logger.threshold = Priority.error
+else:
+    connection = IrcConnection(nick, server)
 
-connection = IrcConnection(nick, server)
 bingo_bot = BingoBot(nick, password, connection, channels, commands=all_commands)
 
 last_connection = datetime(year=1999, month=1, day=1)
@@ -53,6 +58,9 @@ while True:
         logger.log("Connecting to server...")
         bingo_bot.connect()
         bingo_bot.listen()
+    except KillException as e:
+        logger.error("Got KillException: " + str(e))
+        sys.exit()
     except Exception as e:
         logger.error("Encountered exception while running:")
         logger.error(traceback.format_exc())

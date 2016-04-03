@@ -2,6 +2,7 @@ from collections import deque
 import socket
 
 from logger import logger
+from messages import is_message, Message
 
 DEFAULT_PORT = 6667
 DEFAULT_TIMEOUT = 120
@@ -62,6 +63,36 @@ class IrcConnection:
         raise DeadSocketException("Timed out " + str(TIMEOUT_ATTEMPTS) + " times")
 
 
+PRIVMSG_TEMPLATE = ":console!console@localhost PRIVMSG {nick} :{message}"
+
 class ConsoleIrcConnection:
-    pass
+
+    def __init__(self, nick, server, port=DEFAULT_PORT, timeout=DEFAULT_TIMEOUT):
+        self.nick = nick
+        self.server = server
+        self.port = port
+        self.timeout = timeout
+
+    def connect(self):
+        print("Connected")
+
+    def send(self, line):
+        if is_message(line):
+            message = Message(line)
+            print("-->", message.text, end="")
+        else:
+            print("###", line, end="")
+
+    def read_line(self):
+        try:
+            line = input("==> ")
+            return self._format_line(line)
+        except EOFError:
+            from bingobot import KillException
+            print()
+            raise KillException("Got EOF")
+
+    def _format_line(self, line):
+        return PRIVMSG_TEMPLATE.format(nick=self.nick, message=line)
+
 
