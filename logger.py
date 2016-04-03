@@ -27,7 +27,7 @@ class Logger:
             print(colored(now + " - " + message, color))
 
     def log(self, message):
-        self._log(message, priority=Priority.verbose)
+        self._log(message)
 
     def error(self, message, e=None):
         self._log(message, ERROR_COLOR, priority=Priority.error)
@@ -35,11 +35,14 @@ class Logger:
     def debug(self, message):
         self._log(message, DEBUG_COLOR)
 
+    def incoming(self, message):
+        self._log(message, priority=Priority.verbose)
+
     def incoming_info(self, message):
-        self._log(message, INCOMING_INFO_COLOR)
+        self._log(message, INCOMING_INFO_COLOR, priority=Priority.verbose)
 
     def incoming_ping(self, message):
-        self._log(message, INCOMING_PING_COLOR)
+        self._log(message, INCOMING_PING_COLOR, priority=Priority.verbose)
 
     def outgoing(self, message):
         self._log(message, OUTGOING_COLOR, priority=Priority.verbose)
