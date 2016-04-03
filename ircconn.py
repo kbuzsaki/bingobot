@@ -1,6 +1,8 @@
 from collections import deque
 import socket
 
+from logger import logger
+
 DEFAULT_PORT = 6667
 DEFAULT_TIMEOUT = 120
 
@@ -46,14 +48,18 @@ class IrcConnection:
 
                 # empty string means closed socket, so exit
                 if not message:
+                    logger.debug("Got empty string message, socket must be closed")
                     raise DeadSocketException("Socket Closed")
 
                 return message.split("\n")
             except socket.timeout:
+                logger.debug("Got timeout: " + str(attempt))
                 # try again...
                 pass
-        else:
-            raise DeadSocketException("Timed out " + str(TIMEOUT_ATTEMPTS) + " times")
+
+        logger.debug("Timed out completely")
+        # if we run out of attempts, raise exception
+        raise DeadSocketException("Timed out " + str(TIMEOUT_ATTEMPTS) + " times")
 
 
 class ConsoleIrcConnection:
