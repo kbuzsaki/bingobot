@@ -36,9 +36,10 @@ def get_race_history(player, race_count=-1):
 
 BINGO_V8_RELEASE = date(2013, 9, 11)
 
-def get_bingos_from(race_history):
+def get_oot_bingos_from(race_history):
+    oot_races = [race for race in race_history if race["game"]["abbrev"] == "oot"]
     bingo_races = []
-    for race in race_history:
+    for race in oot_races:
         race_date = date.fromtimestamp(float(race["date"]))
         if is_bingo_goal(race["goal"]) and race_date > BINGO_V8_RELEASE:
             bingo_races.append(race)
@@ -89,13 +90,13 @@ class Racer:
         self.username = username.strip()
         race_history = get_race_history(self.username)
         self.num_loaded_races = len(race_history)
-        self.bingo_results = get_results_from(get_bingos_from(race_history), self.username)
+        self.bingo_results = get_results_from(get_oot_bingos_from(race_history), self.username)
 
     def update(self):
         num_outdated = get_number_races(self.username) - self.num_loaded_races
         if num_outdated > 0:
             new_races = get_race_history(self.username, num_outdated)
-            new_bingo_results = get_results_from(get_bingos_from(new_races), self.username)
+            new_bingo_results = get_results_from(get_oot_bingos_from(new_races), self.username)
             self.bingo_results = new_bingo_results + self.bingo_results
             self.num_loaded_races += num_outdated
 
