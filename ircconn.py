@@ -63,7 +63,7 @@ class IrcConnection:
         raise DeadSocketException("Timed out " + str(TIMEOUT_ATTEMPTS) + " times")
 
 
-PRIVMSG_TEMPLATE = ":console!console@localhost PRIVMSG {nick} :{message}"
+PRIVMSG_TEMPLATE = ":saltor!saltor@localhost PRIVMSG {nick} :{message}"
 
 class ConsoleIrcConnection:
 
