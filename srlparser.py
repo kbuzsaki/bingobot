@@ -10,7 +10,7 @@ def load_json_from_url(url):
     json_dict = json.loads(json_file.read().decode())
     return json_dict
 
-BINGO_URL_BASE = "speedrunslive.com/tools/oot-bingo/"
+BINGO_URL_BASE = "speedrunslive.com/tools/oot-bingo"
 
 BLACKLISTED_GOAL_WORDS = ["short", "blackout", "double"]
 
