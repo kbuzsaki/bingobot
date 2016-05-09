@@ -16,8 +16,7 @@ RETRY_INTERVAL = timedelta(minutes=1)
 
 server = "irc2.speedrunslive.com"
 channels = ["#bingoleague", "#speedrunslive"]
-channels = ["#test"]
-nick = "TestBingoBot"
+nick = "BingoBot"
 password = ""
 
 loaded_modules = []
