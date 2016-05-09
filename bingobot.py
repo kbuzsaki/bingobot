@@ -70,6 +70,7 @@ class BingoBot:
                 self.process_line(next_line)
             except DeadSocketException as e:
                 logger.error(str(e))
+                raise e
 
     def process_line(self, ircmsg):
         if is_ping(ircmsg):
